@@ -1,8 +1,13 @@
-import { BooleanLike } from 'common/react';
-
-import { useBackend } from '../backend';
-import { Box, Button, LabeledList, ProgressBar, Section } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
+import {
+  Box,
+  Button,
+  LabeledList,
+  ProgressBar,
+  Section,
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 type Data = {
   dish_inserted: BooleanLike;
@@ -93,7 +98,7 @@ const DiseaseSplicerVirusDish = (props) => {
             )}
           </Section>
           <Section title="Affected Species" color="label">
-            {!affected_species || !affected_species.length
+            {!affected_species?.length
               ? 'None'
               : affected_species.sort().join(', ')}
           </Section>

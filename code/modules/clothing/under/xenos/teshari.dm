@@ -125,7 +125,7 @@
 	name = "Undercoat"
 	desc =  "A Teshari traditional garb, with a modern twist! Made of micro and nanofibres to make it light and billowy, perfect for going fast and stylishly!"
 	icon_state = "tesh_uniform_bo"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO
+	body_parts_covered = CHEST
 
 /obj/item/clothing/under/teshari/undercoat/standard/black_orange
 	name = "black and orange undercoat"
@@ -231,7 +231,7 @@
 	icon_state = "tesh_uniform_hop"
 
 /obj/item/clothing/under/teshari/undercoat/jobs/ce
-	name = "cheif engineer undercoat"
+	name = "chief engineer undercoat"
 	desc = "A traditional Teshari garb made for the " + JOB_CHIEF_ENGINEER
 	icon_state = "tesh_uniform_ce"
 
@@ -257,7 +257,7 @@
 
 /obj/item/clothing/under/teshari/undercoat/jobs/cmo
 	name = "chief medical officer undercoat"
-	desc = "A traditional Teshari garb made for the Cheif Medical Officer"
+	desc = "A traditional Teshari garb made for the Chief Medical Officer"
 	icon_state = "tesh_uniform_cmo"
 
 /obj/item/clothing/under/teshari/undercoat/jobs/qm

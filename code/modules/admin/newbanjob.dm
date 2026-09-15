@@ -15,10 +15,10 @@
 #define RANK_DETECTIVE_HOS "Detective_HoS"
 #define RANK_VIROLOGIST_RD_CMO "Virologist_RD_CMO"
 
-var/savefile/Banlistjob
+GLOBAL_DATUM(banlistjob, /savefile)
 
 
-/proc/_jobban_isbanned(var/client/clientvar, var/rank)
+/proc/_jobban_isbanned(client/clientvar, rank)
 	if(!clientvar) return 1
 	ClearTempbansjob()
 	var/id = clientvar.computer_id
@@ -26,30 +26,31 @@ var/savefile/Banlistjob
 	if (guest_jobbans(rank))
 		if(config.guest_jobban && IsGuestKey(key))
 			return 1
-	Banlistjob.cd = "/base"
-	if (Banlistjob.dir.Find("[key][id][rank]"))
+	GLOB.banlistjob.cd = "/base"
+	if (GLOB.banlistjob.dir.Find("[key][id][rank]"))
 		return 1
 
-	Banlistjob.cd = "/base"
-	for (var/A in Banlistjob.dir)
-		Banlistjob.cd = "/base/[A]"
-		if ((id == Banlistjob["id"] || key == Banlistjob["key"]) && rank == Banlistjob["rank"])
+	GLOB.banlistjob.cd = "/base"
+	for (var/A in GLOB.banlistjob.dir)
+		GLOB.banlistjob.cd = "/base/[A]"
+		if ((id == GLOB.banlistjob["id"] || key == GLOB.banlistjob["key"]) && rank == GLOB.banlistjob["rank"])
 			return 1
 	return 0
 
 /proc/LoadBansjob()
 
-	Banlistjob = new("data/job_fullnew.bdb")
+	GLOB.banlistjob = new("data/job_fullnew.bdb")
 	log_admin("Loading Banlistjob")
 
-	if (!length(Banlistjob.dir)) log_admin("Banlistjob is empty.")
+	if (!length(GLOB.banlistjob.dir))
+		log_admin("Banlistjob is empty.")
 
-	if (!Banlistjob.dir.Find("base"))
+	if (!GLOB.banlistjob.dir.Find("base"))
 		log_admin("Banlistjob missing base dir.")
-		Banlistjob.dir.Add("base")
-		Banlistjob.cd = "/base"
-	else if (Banlistjob.dir.Find("base"))
-		Banlistjob.cd = "/base"
+		GLOB.banlistjob.dir.Add("base")
+		GLOB.banlistjob.cd = "/base"
+	else if (GLOB.banlistjob.dir.Find("base"))
+		GLOB.banlistjob.cd = "/base"
 
 	ClearTempbansjob()
 	return 1
@@ -57,17 +58,17 @@ var/savefile/Banlistjob
 /proc/ClearTempbansjob()
 	UpdateTime()
 
-	Banlistjob.cd = "/base"
-	for (var/A in Banlistjob.dir)
-		Banlistjob.cd = "/base/[A]"
-		//if (!Banlistjob["key"] || !Banlistjob["id"])
+	GLOB.banlistjob.cd = "/base"
+	for (var/A in GLOB.banlistjob.dir)
+		GLOB.banlistjob.cd = "/base/[A]"
+		//if (!GLOB.banlistjob["key"] || !GLOB.banlistjob["id"])
 		//	RemoveBanjob(A, "full")
 		//	log_admin("Invalid Ban.")
 		//	message_admins("Invalid Ban.")
 		//	continue
 
-		if (!Banlistjob["temp"]) continue
-		if (CMinutes >= Banlistjob["minutes"]) RemoveBanjob(A)
+		if (!GLOB.banlistjob["temp"]) continue
+		if (CMinutes >= GLOB.banlistjob["minutes"]) RemoveBanjob(A)
 
 	return 1
 
@@ -156,21 +157,21 @@ var/savefile/Banlistjob
 		AddBanjob(ckey, computerid, reason, bannedby, temp, minutes, JOB_ALT_VIROLOGIST)
 		return 1
 
-	Banlistjob.cd = "/base"
-	if ( Banlistjob.dir.Find("[ckey][computerid][rank]") )
+	GLOB.banlistjob.cd = "/base"
+	if ( GLOB.banlistjob.dir.Find("[ckey][computerid][rank]") )
 		to_chat(usr, span_red("Banjob already exists."))
 		return 0
 	else
-		Banlistjob.dir.Add("[ckey][computerid][rank]")
-		Banlistjob.cd = "/base/[ckey][computerid][rank]"
-		Banlistjob["key"] << ckey
-		Banlistjob["id"] << computerid
-		Banlistjob["rank"] << rank
-		Banlistjob["reason"] << reason
-		Banlistjob["bannedby"] << bannedby
-		Banlistjob["temp"] << temp
+		GLOB.banlistjob.dir.Add("[ckey][computerid][rank]")
+		GLOB.banlistjob.cd = "/base/[ckey][computerid][rank]"
+		GLOB.banlistjob["key"] << ckey
+		GLOB.banlistjob["id"] << computerid
+		GLOB.banlistjob["rank"] << rank
+		GLOB.banlistjob["reason"] << reason
+		GLOB.banlistjob["bannedby"] << bannedby
+		GLOB.banlistjob["temp"] << temp
 		if (temp)
-			Banlistjob["minutes"] << bantimestamp
+			GLOB.banlistjob["minutes"] << bantimestamp
 	admin_action_message(bannedby, ckey, "jobbanned-"+rank, reason, temp ? minutes : -1) //VOREStation Add
 	return 1
 
@@ -178,13 +179,14 @@ var/savefile/Banlistjob
 	var/key
 	var/id
 	var/rank
-	Banlistjob.cd = "/base/[foldername]"
-	Banlistjob["key"] >> key
-	Banlistjob["id"] >> id
-	Banlistjob["rank"] >> rank
-	Banlistjob.cd = "/base"
+	GLOB.banlistjob.cd = "/base/[foldername]"
+	GLOB.banlistjob["key"] >> key
+	GLOB.banlistjob["id"] >> id
+	GLOB.banlistjob["rank"] >> rank
+	GLOB.banlistjob.cd = "/base"
 
-	if (!Banlistjob.dir.Remove(foldername)) return 0
+	if (!GLOB.banlistjob.dir.Remove(foldername))
+		return 0
 
 	if(!usr)
 		log_admin("Banjob Expired: [key]")
@@ -196,11 +198,11 @@ var/savefile/Banlistjob
 		feedback_inc("ban_job_unban",1)
 		feedback_add_details("ban_job_unban","- [rank]")
 
-	for (var/A in Banlistjob.dir)
-		Banlistjob.cd = "/base/[A]"
-		if ((key == Banlistjob["key"] || id == Banlistjob["id"]) && (rank == Banlistjob["rank"]))
-			Banlistjob.cd = "/base"
-			Banlistjob.dir.Remove(A)
+	for (var/A in GLOB.banlistjob.dir)
+		GLOB.banlistjob.cd = "/base/[A]"
+		if ((key == GLOB.banlistjob["key"] || id == GLOB.banlistjob["id"]) && (rank == GLOB.banlistjob["rank"]))
+			GLOB.banlistjob.cd = "/base"
+			GLOB.banlistjob.dir.Remove(A)
 			continue
 	admin_action_message(usr.key, key, "unjobbanned-"+rank, "\[Unban\]", 0) //VOREStation Add
 	return 1
@@ -223,37 +225,40 @@ var/savefile/Banlistjob
 /datum/admins/proc/unjobbanpanel()
 	var/count = 0
 	var/dat
-	//var/dat = "<HR><B>Unban Player:</B> <font color='blue'>(U) = Unban , (E) = Edit Ban</font> <font color='green'>(Total<HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 </font>>"
-	Banlistjob.cd = "/base"
-	for (var/A in Banlistjob.dir)
+	//var/dat = "<HR>" + span_bold("Unban Player: ") + span_blue("(U) = Unban , (E) = Edit Ban") + span_green("(Total<HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >")
+	GLOB.banlistjob.cd = "/base"
+	for (var/A in GLOB.banlistjob.dir)
 		count++
-		Banlistjob.cd = "/base/[A]"
-		dat += text("<tr><td><A href='?src=\ref[src];[HrefToken()];unjobbanf=[Banlistjob["key"]][Banlistjob["id"]][Banlistjob["rank"]]'>(U)</A> Key: <B>[Banlistjob["key"]] </B>Rank: <B>[Banlistjob["rank"]]</B></td><td> ([Banlistjob["temp"] ? "[GetBanExpjob(Banlistjob["minutes"]) ? GetBanExpjob(Banlistjob["minutes"]) : "Removal pending" ]" : "Permaban"])</td><td>(By: [Banlistjob["bannedby"]])</td><td>(Reason: [Banlistjob["reason"]])</td></tr>")
+		GLOB.banlistjob.cd = "/base/[A]"
+		dat += text("<tr><td><A href='byond://?src=\ref[src];[HrefToken()];unjobbanf=[GLOB.banlistjob["key"]][GLOB.banlistjob["id"]][GLOB.banlistjob["rank"]]'>(U)</A> Key: <B>[GLOB.banlistjob["key"]] </B>Rank: <B>[GLOB.banlistjob["rank"]]</B></td><td> ([GLOB.banlistjob["temp"] ? "[GetBanExpjob(GLOB.banlistjob["minutes"]) ? GetBanExpjob(GLOB.banlistjob["minutes"]) : "Removal pending" ]" : "Permaban"])</td><td>(By: [GLOB.banlistjob["bannedby"]])</td><td>(Reason: [GLOB.banlistjob["reason"]])</td></tr>")
 
 	dat += "</table>"
-	dat = "<HR><B>Bans:</B> <FONT COLOR=blue>(U) = Unban , </FONT> - <FONT COLOR=green>([count] Bans)</FONT><HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"
-	usr << browse(dat, "window=unbanp;size=875x400")
+	dat = "<HR>" + span_bold("Bans:") + " " span_blue("(U) = Unban , ") + " - " + span_green("([count] Bans)") + "<HR><table border=1 rules=all frame=void cellspacing=0 cellpadding=3 >[dat]"
+
+	var/datum/browser/popup = new(owner, "unbanjob", "Unban Job", 875, 400)
+	popup.set_content(dat)
+	popup.open()
 
 /*/datum/admins/proc/permjobban(ckey, computerid, reason, bannedby, temp, minutes, rank)
 	if(AddBanjob(ckey, computerid, reason, usr.ckey, 0, 0, job))
-		to_chat(M, "<font color='red'><BIG><B>You have been banned from [job] by [usr.client.ckey].\nReason: [reason].</B></BIG></font>")
-		to_chat(M, "<font color='red'>This is a permanent ban.</font>")
+		to_chat(M, span_large(span_red(span_bold("You have been banned from [job] by [usr.client.ckey].\nReason: [reason]."))))
+		to_chat(M, span_red("This is a permanent ban."))
 		if(config.banappeals)
-			to_chat(M, "<font color='red'>To try to resolve this matter head to [config.banappeals]</font>")
+			to_chat(M, span_red("To try to resolve this matter head to [config.banappeals]"))
 		else
-			to_chat(M, "<font color='red'>No ban appeals URL has been set.</font>")
+			to_chat(M, span_red("No ban appeals URL has been set."))
 		log_admin("[usr.client.ckey] has banned from [job] [ckey].\nReason: [reason]\nThis is a permanent ban.")
-		message_admins("<font color='blue'>[usr.client.ckey] has banned from [job] [ckey].\nReason: [reason]\nThis is a permanent ban.</font>")
+		message_admins(span_blue("[usr.client.ckey] has banned from [job] [ckey].\nReason: [reason]\nThis is a permanent ban."))
 /datum/admins/proc/timejobban(ckey, computerid, reason, bannedby, temp, minutes, rank)
 	if(AddBanjob(ckey, computerid, reason, usr.ckey, 1, mins, job))
-		to_chat(M, "<font color='red'><BIG><B>You have been jobbanned from [job] by [usr.client.ckey].\nReason: [reason].</B></BIG></font>")
-		to_chat(M, "<font color='red'>This is a temporary ban, it will be removed in [mins] minutes.</font>")
+		to_chat(M, span_large(span_red(span_bold("You have been jobbanned from [job] by [usr.client.ckey].\nReason: [reason]."))))
+		to_chat(M, span_red("This is a temporary ban, it will be removed in [mins] minutes."))
 		if(config.banappeals)
-			to_chat(M, "<font color='red'>To try to resolve this matter head to [config.banappeals]</font>")
+			to_chat(M, span_red("To try to resolve this matter head to [config.banappeals]"))
 		else
-			to_chat(M, "<font color='red'>No ban appeals URL has been set.</font>")
+			to_chat(M, span_red("No ban appeals URL has been set."))
 		log_admin("[usr.client.ckey] has jobbanned from [job] [ckey].\nReason: [reason]\nThis will be removed in [mins] minutes.")
-		message_admins("<font color='blue'>[usr.client.ckey] has banned from [job] [ckey].\nReason: [reason]\nThis will be removed in [mins] minutes.</font>")*/
+		message_admins(span_blue("[usr.client.ckey] has banned from [job] [ckey].\nReason: [reason]\nThis will be removed in [mins] minutes."))*/
 //////////////////////////////////// DEBUG ////////////////////////////////////
 
 /proc/CreateBansjob()
@@ -267,27 +272,27 @@ var/savefile/Banlistjob
 		var/a = pick(1,0)
 		var/b = pick(1,0)
 		if(b)
-			Banlistjob.cd = "/base"
-			Banlistjob.dir.Add("trash[i]trashid[i]")
-			Banlistjob.cd = "/base/trash[i]trashid[i]"
-			to_chat(Banlistjob["key"], "trash[i]")
+			GLOB.banlistjob.cd = "/base"
+			GLOB.banlistjob.dir.Add("trash[i]trashid[i]")
+			GLOB.banlistjob.cd = "/base/trash[i]trashid[i]"
+			to_chat(GLOB.banlistjob["key"], "trash[i]")
 		else
-			Banlistjob.cd = "/base"
-			Banlistjob.dir.Add("[last]trashid[i]")
-			Banlistjob.cd = "/base/[last]trashid[i]"
-			Banlistjob["key"] << last
-		to_chat(Banlistjob["id"], "trashid[i]")
-		to_chat(Banlistjob["reason"], "Trashban[i].")
-		Banlistjob["temp"] << a
-		Banlistjob["minutes"] << CMinutes + rand(1,2000)
-		to_chat(Banlistjob["bannedby"], "trashmin")
+			GLOB.banlistjob.cd = "/base"
+			GLOB.banlistjob.dir.Add("[last]trashid[i]")
+			GLOB.banlistjob.cd = "/base/[last]trashid[i]"
+			GLOB.banlistjob["key"] << last
+		to_chat(GLOB.banlistjob["id"], "trashid[i]")
+		to_chat(GLOB.banlistjob["reason"], "Trashban[i].")
+		GLOB.banlistjob["temp"] << a
+		GLOB.banlistjob["minutes"] << CMinutes + rand(1,2000)
+		to_chat(GLOB.banlistjob["bannedby"], "trashmin")
 		last = "trash[i]"
 
-	Banlistjob.cd = "/base"
+	GLOB.banlistjob.cd = "/base"
 
 /proc/ClearAllBansjob()
-	Banlistjob.cd = "/base"
-	for (var/A in Banlistjob.dir)
+	GLOB.banlistjob.cd = "/base"
+	for (var/A in GLOB.banlistjob.dir)
 		RemoveBanjob(A, "full")
 
 #undef RANK_HEADS

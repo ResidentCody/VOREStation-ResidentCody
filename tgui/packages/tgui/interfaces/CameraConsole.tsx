@@ -1,12 +1,16 @@
-import { filter, sortBy } from 'common/collections';
-import { flow } from 'common/fp';
-import { BooleanLike, classes } from 'common/react';
-import { createSearch } from 'common/string';
 import { useState } from 'react';
-
-import { useBackend } from '../backend';
-import { Button, ByondUi, Dropdown, Flex, Input, Section } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
+import {
+  Button,
+  ByondUi,
+  Dropdown,
+  Input,
+  Section,
+  Stack,
+} from 'tgui-core/components';
+import { type BooleanLike, classes } from 'tgui-core/react';
+import { createSearch } from 'tgui-core/string';
 
 type activeCamera = { name: string; status: BooleanLike } | null;
 
@@ -50,32 +54,25 @@ export const selectCameras = (
   searchText: string = '',
   networkFilter: string = '',
 ): camera[] => {
-  const testSearch = createSearch(searchText, (camera: camera) => camera.name);
-  return flow([
-    (cameras: camera[]) =>
-      // Null camera filter
-      filter(cameras, (camera) => notEmpty(camera?.name)),
-    (cameras: camera[]) => {
-      // Optional search term
+  const testSearch = createSearch<camera>(searchText, (camera) => camera.name);
+
+  return cameras
+    .filter((camera) => notEmpty(camera?.name))
+    .filter((camera) => {
       if (!searchText) {
-        return cameras;
+        return true;
       } else {
-        return filter(cameras, testSearch);
+        return testSearch(camera);
       }
-    },
-    (cameras: camera[]) => {
-      // Optional network filter
+    })
+    .filter((camera) => {
       if (!networkFilter) {
-        return cameras;
+        return true;
       } else {
-        return filter(cameras, (camera) =>
-          camera.networks.includes(networkFilter),
-        );
+        return camera.networks.includes(networkFilter);
       }
-    },
-    // Slightly expensive, but way better than sorting in BYOND
-    (cameras: camera[]) => sortBy(cameras, (camera) => camera.name),
-  ])(cameras);
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
 };
 
 export const CameraConsole = (props) => {
@@ -99,7 +96,7 @@ export const CameraConsole = (props) => {
       <div className="CameraConsole__right">
         <div className="CameraConsole__toolbar">
           <b>Camera: </b>
-          {(activeCamera && activeCamera.name) || '—'}
+          {activeCamera?.name || '—'}
         </div>
         <div className="CameraConsole__toolbarRight">
           SEL:
@@ -151,20 +148,22 @@ export const CameraConsoleContent = (props) => {
     networkFilter,
   );
   return (
-    <Flex direction={'column'} height="100%">
-      <Flex.Item>
+    <Stack vertical height="100%">
+      <Stack.Item>
         <Input
           autoFocus
           fluid
           mt={1}
           placeholder="Search for a camera"
-          onInput={(e, value: string) => setSearchText(value)}
+          onChange={(value: string) => setSearchText(value)}
         />
-      </Flex.Item>
-      <Flex.Item>
-        <Flex>
-          <Flex.Item>
+      </Stack.Item>
+      <Stack.Item>
+        <Stack>
+          <Stack.Item>
             <Dropdown
+              searchInput
+              styledInput
               autoScroll={false}
               mb={1}
               width={networkFilter ? '155px' : '177px'}
@@ -173,9 +172,9 @@ export const CameraConsoleContent = (props) => {
               options={allNetworks}
               onSelected={(value) => setNetworkFilter(value)}
             />
-          </Flex.Item>
+          </Stack.Item>
           {networkFilter ? (
-            <Flex.Item>
+            <Stack.Item>
               <Button
                 width="22px"
                 icon="undo"
@@ -184,13 +183,13 @@ export const CameraConsoleContent = (props) => {
                   setNetworkFilter('');
                 }}
               />
-            </Flex.Item>
+            </Stack.Item>
           ) : (
             ''
           )}
-        </Flex>
-      </Flex.Item>
-      <Flex.Item height="100%">
+        </Stack>
+      </Stack.Item>
+      <Stack.Item height="100%">
         <Section fill scrollable>
           {selected_cameras.map((camera) => (
             // We're not using the component here because performance
@@ -217,7 +216,7 @@ export const CameraConsoleContent = (props) => {
             </div>
           ))}
         </Section>
-      </Flex.Item>
-    </Flex>
+      </Stack.Item>
+    </Stack>
   );
 };

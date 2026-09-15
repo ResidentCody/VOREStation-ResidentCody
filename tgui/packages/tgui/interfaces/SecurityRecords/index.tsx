@@ -1,17 +1,17 @@
-import { useBackend } from '../../backend';
-import { Section } from '../../components';
-import { ComplexModal } from '../../interfaces/common/ComplexModal';
-import { Window } from '../../layouts';
-import { LoginInfo } from '../common/LoginInfo';
-import { LoginScreen } from '../common/LoginScreen';
-import { TemporaryNotice } from '../common/TemporaryNotice';
+import { useBackend } from 'tgui/backend';
+import { ComplexModal } from 'tgui/interfaces/common/ComplexModal';
+import { LoginInfo } from 'tgui/interfaces/common/LoginInfo';
+import { LoginScreen } from 'tgui/interfaces/common/LoginScreen';
+import { TemporaryNotice } from 'tgui/interfaces/common/TemporaryNotice';
+import { Window } from 'tgui/layouts';
+import { Section } from 'tgui-core/components';
 import { SecurityRecordsList } from './SecurityRecordsList';
 import {
   SecurityRecordsMaintenance,
   SecurityRecordsNavigation,
   SecurityRecordsView,
 } from './SecurityRecordsOptions';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const SecurityRecords = (props) => {
   const { data } = useBackend<Data>();

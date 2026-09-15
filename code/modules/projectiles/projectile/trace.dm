@@ -1,6 +1,6 @@
 // Helper proc to check if you can hit them or not.
 // Will return a list of hit mobs/objects.
-/proc/check_trajectory(atom/target as mob|obj, atom/firer as mob|obj, var/pass_flags=PASSTABLE|PASSGLASS|PASSGRILLE, flags=null)
+/proc/check_trajectory(atom/target as mob|obj, atom/firer as mob|obj, pass_flags=PASSTABLE|PASSGLASS|PASSGRILLE, flags=null)
 	if(!istype(target) || !istype(firer))
 		return 0
 
@@ -13,14 +13,14 @@
 
 	return trace.launch_projectile(target) //Test it!
 
-/obj/item/projectile/proc/_check_fire(atom/target as mob, var/mob/living/user as mob)  //Checks if you can hit them or not.
+/obj/item/projectile/proc/_check_fire(atom/target as mob, mob/living/user as mob)  //Checks if you can hit them or not.
 	if(target in check_trajectory(target, user, pass_flags, flags))
 		return TRUE
 	return FALSE
 
 //"Tracing" projectile
 /obj/item/projectile/test //Used to see if you can hit them.
-	invisibility = 101 //Nope!  Can't see me!
+	invisibility = INVISIBILITY_ABSTRACT //Nope!  Can't see me!
 	hitscan = TRUE
 	nodamage = TRUE
 	damage = 0

@@ -72,7 +72,7 @@
 	var/state = A.icon_state
 	var/none = !icon
 	if(!none)
-		var/list/states = icon_states(icon)
+		var/list/states = icon_states_fast(icon)
 		if(!(state in states))
 			if(!("" in states))
 				none = TRUE
@@ -89,9 +89,12 @@
 		dir = A.dir
 	var/ourdir = dir
 	if(!none && ourdir != SOUTH)
-		if(length(icon_states(icon(icon, state, NORTH))))
-		else if(length(icon_states(icon(icon, state, EAST))))
-		else if(length(icon_states(icon(icon, state, WEST))))
+		if(length(icon_states_fast(icon(icon, state, NORTH))))
+			pass()
+		else if(length(icon_states_fast(icon(icon, state, EAST))))
+			pass()
+		else if(length(icon_states_fast(icon(icon, state, WEST))))
+			pass()
 		else
 			ourdir = SOUTH
 

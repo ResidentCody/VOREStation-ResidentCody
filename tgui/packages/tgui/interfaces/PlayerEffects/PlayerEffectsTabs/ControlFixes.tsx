@@ -1,5 +1,5 @@
-import { useBackend } from '../../../backend';
-import { Button, Section } from '../../../components';
+import { useBackend } from 'tgui/backend';
+import { Button, Section } from 'tgui-core/components';
 
 export const ControlFixes = (props) => {
   const { act } = useBackend();
@@ -14,6 +14,9 @@ export const ControlFixes = (props) => {
       </Button>
       <Button fluid onClick={() => act('stop-orbits')}>
         Clear All Orbiters
+      </Button>
+      <Button fluid onClick={() => act('revert-mob-tf')}>
+        Revert Mob Transformation
       </Button>
     </Section>
   );

@@ -1,4 +1,4 @@
-var/list/department_radio_keys = list(
+GLOBAL_LIST_INIT(department_radio_keys, list(
 	":r" = "right ear",	".r" = "right ear",
 	":l" = "left ear",	".l" = "left ear",
 	":i" = "intercom",	".i" = "intercom",
@@ -16,8 +16,8 @@ var/list/department_radio_keys = list(
 	":u" = CHANNEL_SUPPLY,		".u" = CHANNEL_SUPPLY,
 	":v" = CHANNEL_SERVICE,		".v" = CHANNEL_SERVICE,
 	":p" = CHANNEL_AI_PRIVATE,	".p" = CHANNEL_AI_PRIVATE,
-	":a" = CHANNEL_EXPLORATION,	".a" = CHANNEL_EXPLORATION,	//VOREStation Edit
-	":y" = CHANNEL_TALON,		".y" = CHANNEL_TALON, //VOREStation Add,
+	":a" = CHANNEL_EXPLORATION,	".a" = CHANNEL_EXPLORATION,
+	":y" = CHANNEL_TALON,		".y" = CHANNEL_TALON,
 	":g" = CHANNEL_CASINO,	".g" = CHANNEL_CASINO,
 
 	":R" = "right ear",	".R" = "right ear",
@@ -28,7 +28,7 @@ var/list/department_radio_keys = list(
 	":N" = CHANNEL_SCIENCE,		".N" = CHANNEL_SCIENCE,
 	":M" = CHANNEL_MEDICAL,		".M" = CHANNEL_MEDICAL,
 	":E" = CHANNEL_ENGINEERING,	".E" = CHANNEL_ENGINEERING,
-	":k" = CHANNEL_RESPONSE_TEAM,	".k" = CHANNEL_RESPONSE_TEAM,
+	":K" = CHANNEL_RESPONSE_TEAM,	".K" = CHANNEL_RESPONSE_TEAM,
 	":S" = CHANNEL_SECURITY,	".S" = CHANNEL_SECURITY,
 	":W" = "whisper",		".W" = "whisper",
 	":T" = CHANNEL_MERCENARY,	".T" = CHANNEL_MERCENARY,
@@ -37,7 +37,7 @@ var/list/department_radio_keys = list(
 	":V" = CHANNEL_SERVICE,		".V" = CHANNEL_SERVICE,
 	":P" = CHANNEL_AI_PRIVATE,	".P" = CHANNEL_AI_PRIVATE,
 	":A" = CHANNEL_EXPLORATION,	".A" = CHANNEL_EXPLORATION,
-	":Y" = CHANNEL_TALON,		".Y" = CHANNEL_TALON, //VOREStation Add,
+	":Y" = CHANNEL_TALON,		".Y" = CHANNEL_TALON,
 	":G" = CHANNEL_CASINO,	".G" = CHANNEL_CASINO,
 
 	// Cyrillic characters on the same keys on the Russian QWERTY (phonetic) layout
@@ -59,22 +59,21 @@ var/list/department_radio_keys = list(
 	":м" = CHANNEL_SERVICE,        ".м" = CHANNEL_SERVICE,
 	":з" = CHANNEL_AI_PRIVATE,    ".з" = CHANNEL_AI_PRIVATE,
 	":ф" = CHANNEL_EXPLORATION,    ".ф" = CHANNEL_EXPLORATION,
-	":н" = CHANNEL_TALON,        ".н" = CHANNEL_TALON, //VOREStation Add
+	":н" = CHANNEL_TALON,        ".н" = CHANNEL_TALON,
 	":п" = CHANNEL_CASINO,	".п" = CHANNEL_CASINO,
-)
+))
 
-
-var/list/channel_to_radio_key = new
-/proc/get_radio_key_from_channel(var/channel)
-	var/key = channel_to_radio_key[channel]
+GLOBAL_LIST_EMPTY(channel_to_radio_key)
+/proc/get_radio_key_from_channel(channel)
+	var/key = GLOB.channel_to_radio_key[channel]
 	if(!key)
-		for(var/radio_key in department_radio_keys)
-			if(department_radio_keys[radio_key] == channel)
+		for(var/radio_key in GLOB.department_radio_keys)
+			if(GLOB.department_radio_keys[radio_key] == channel)
 				key = radio_key
 				break
 		if(!key)
 			key = ""
-		channel_to_radio_key[channel] = key
+		GLOB.channel_to_radio_key[channel] = key
 
 	return key
 
@@ -89,7 +88,7 @@ var/list/channel_to_radio_key = new
 
 //Takes a list of the form list(message, verb, whispering) and modifies it as needed
 //Returns 1 if a speech problem was applied, 0 otherwise
-/mob/living/proc/handle_speech_problems(var/list/message_data)
+/mob/living/proc/handle_speech_problems(list/message_data)
 	var/list/message_pieces = message_data[1]
 	var/verb = message_data[2]
 	var/whispering = message_data[3]
@@ -99,6 +98,10 @@ var/list/channel_to_radio_key = new
 	for(var/datum/multilingual_say_piece/S in message_pieces)
 		if(S.speaking && (S.speaking.flags & NO_STUTTER || S.speaking.flags & SIGNLANG))
 			continue
+
+		if(disabilities & CENSORED)
+			S.message = censor_swears(S.message) // Googlybonkers
+			. = 1
 
 		if((HULK in mutations) && health >= 25 && length(S.message))
 			S.message = "[uppertext(S.message)]!!!"
@@ -113,12 +116,15 @@ var/list/channel_to_radio_key = new
 			S.message = stutter(S.message)
 			verb = pick("stammers","stutters")
 			. = 1
-		//VOREStation Edit Start
 		if(muffled)
 			verb = pick("muffles")
 			whispering = 1
 			. = 1
-		//VOREStation Edit End
+		if(disabilities & WINGDINGS)
+			verb = pick("gibbers","gabbers","gahoos","gazonks") // Yeah lets just be stupid
+			S.message = Gibberish(S.message, 100) // Googlybonkers
+			S.message = span_wingdings((S.message))
+			. = 1
 
 	message_data[1] = message_pieces
 	message_data[2] = verb
@@ -126,7 +132,7 @@ var/list/channel_to_radio_key = new
 
 /mob/living/proc/handle_message_mode(message_mode, list/message_pieces, verb, used_radios)
 	if(message_mode == "intercom")
-		for(var/obj/item/device/radio/intercom/I in view(1, null))
+		for(var/obj/item/radio/intercom/I in view(1, null))
 			I.talk_into(src, message_pieces, verb)
 			used_radios += I
 	return 0
@@ -137,20 +143,20 @@ var/list/channel_to_radio_key = new
 	returns[2] = null
 	return returns
 
-/mob/living/proc/get_speech_ending(verb, var/ending)
+/mob/living/proc/get_speech_ending(verb, ending)
 	if(ending == "!")
 		return pick("exclaims","shouts","yells")
 	if(ending == "?")
 		return "asks"
 	return verb
 
-/mob/living/say(var/message, var/datum/language/speaking = null, var/whispering = 0)
+/mob/living/say(message, datum/language/speaking = null, whispering = 0)
 	//If you're muted for IC chat
 	if(client)
 		if(message)
 			client.handle_spam_prevention(MUTE_IC)
-			if((client.prefs.muted & MUTE_IC) || say_disabled)
-				to_chat(src, "<span class='warning'>You cannot speak in IC (Muted).</span>")
+			if((client.prefs.muted & MUTE_IC))
+				to_chat(src, span_warning("You cannot speak in IC (Muted)."))
 				return
 
 	//Redirect to say_dead if talker is dead
@@ -158,22 +164,22 @@ var/list/channel_to_radio_key = new
 		if(stat == DEAD && !forbid_seeing_deadchat)
 			return say_dead(message)
 		return
-	//VOREStation Addition Start
 	if(forced_psay)
 		psay(message)
 		return
-	if(autowhisper)
-		whispering = 1
-	//VOREStation Addition End
-	//Parse the mode
-	var/message_mode = parse_message_mode(message, "headset")
-
 	//Maybe they are using say/whisper to do a quick emote, so do those
 	switch(copytext(message, 1, 2))
 		if("*") return emote(copytext(message, 2))
-		if("^") return custom_emote(1, copytext(message, 2))
+		if("^") return custom_emote(VISIBLE_MESSAGE, copytext(message, 2))
+	direct_say(message, speaking, whispering)
+
+/mob/living/direct_say(message, datum/language/speaking = null, whispering = 0)
+	// Handle automatic whispering mode
+	if(autowhisper)
+		whispering = 1
 
 	//Parse the radio code and consume it
+	var/message_mode = parse_message_mode(message, "headset")
 	if(message_mode)
 		if(message_mode == "headset")
 			message = copytext(message, 2)	//it would be really nice if the parse procs could do this for us.
@@ -192,10 +198,20 @@ var/list/channel_to_radio_key = new
 		return
 	// VOREStation Edit End
 
+	// If the message ends in an alphanumeric character (therefore, not punctuation),
+	// and autopunctuation is turned on, add a period.
+	// This must be done right here, before parse_languages is called, to make sure it's in the last multilingual say piece.
+	if(contains_az09(copytext(message, length(message))))
+		if(client?.prefs?.read_preference(/datum/preference/toggle/autopunctuation))
+			message += "."
+
 	//Parse the language code and consume it
 	var/list/message_pieces = parse_languages(message)
 	if(istype(message_pieces, /datum/multilingual_say_piece)) // Little quark for dealing with hivemind/signlang languages.
 		var/datum/multilingual_say_piece/S = message_pieces // Yay for BYOND's hilariously broken typecasting for allowing us to do this.
+		if(HAS_MIND_TRAIT(src, TRAIT_MIMING))
+			to_chat(src, span_green("You stop yourself from signing in favor of the art of mimery!"))
+			return FALSE
 		S.speaking.broadcast(src, S.message)
 		return 1
 
@@ -203,10 +219,14 @@ var/list/channel_to_radio_key = new
 		log_runtime(EXCEPTION("Message failed to generate pieces. [message] - [json_encode(message_pieces)]"))
 		return 0
 
+	if(HAS_MIND_TRAIT(src, TRAIT_MIMING))
+		to_chat(src, span_green("Your vow of silence prevents you from speaking!"))
+		return
+
 	// If you're muzzled, you can only speak sign language
 	// However, sign language is handled above.
 	if(is_muzzled())
-		to_chat(src, "<span class='danger'>You're muzzled and cannot speak!</span>")
+		to_chat(src, span_danger("You're muzzled and cannot speak!"))
 		return
 
 	//Whisper vars
@@ -272,7 +292,7 @@ var/list/channel_to_radio_key = new
 			message_range = first_piece.speaking.get_talkinto_msg_range(message)
 		var/msg
 		if(!first_piece.speaking || !(first_piece.speaking.flags & NO_TALK_MSG))
-			msg = "<span class='notice'>[src] talks into [used_radios[1]]</span>"
+			msg = span_notice("[src] talks into [used_radios[1]]")
 
 		if(msg)
 			for(var/mob/living/M in hearers(5, src) - src)
@@ -287,7 +307,7 @@ var/list/channel_to_radio_key = new
 		message_range = 1
 		sound_vol *= 0.5
 
-	//VOREStation edit - allows for custom say verbs, overriding all other say-verb types- e.g. "says loudly" instead of "shouts"
+	//allows for custom say verbs, overriding all other say-verb types- e.g. "says loudly" instead of "shouts"
 	//You'll still stammer if injured or slur if drunk, but it won't have those specific words
 	var/ending = copytext(message, length(message))
 
@@ -299,12 +319,12 @@ var/list/channel_to_radio_key = new
 		verb = "[custom_ask]"
 	else if(custom_say)
 		verb = "[custom_say]"
-	//VOREStation edit ends
 
 	//Handle nonverbal languages here
 	for(var/datum/multilingual_say_piece/S in message_pieces)
 		if((S.speaking.flags & NONVERBAL) || (S.speaking.flags & INAUDIBLE))
-			custom_emote(1, "[pick(S.speaking.signlang_verb)].")
+			var/sign_action = "[pick(S.speaking.signlang_verb)]."
+			automatic_custom_emote(VISIBLE_MESSAGE,sign_action)
 			do_sound = FALSE
 
 	//These will contain the main receivers of the message
@@ -344,10 +364,8 @@ var/list/channel_to_radio_key = new
 	var/image/speech_bubble = generate_speech_bubble(src, "[speech_type][speech_bubble_test]")
 	var/sb_alpha = 255
 	var/atom/loc_before_turf = src
-	//VOREStation Add
 	if(isbelly(loc))
 		speech_bubble.pixel_y = -13 //teehee
-	//VOREStation Add End
 	while(loc_before_turf && !isturf(loc_before_turf.loc))
 		loc_before_turf = loc_before_turf.loc
 		sb_alpha -= 50
@@ -362,12 +380,11 @@ var/list/channel_to_radio_key = new
 		spawn(0) //Using spawns to queue all the messages for AFTER this proc is done, and stop runtimes
 
 			if(M && src) //If we still exist, when the spawn processes
-				//VOREStation Add - Ghosts don't hear whispers
+				// Ghosts don't hear whispers
 				if(whispering && isobserver(M) && (!M.client?.prefs?.read_preference(/datum/preference/toggle/ghost_see_whisubtle) || \
-				(!client?.prefs?.read_preference(/datum/preference/toggle/whisubtle_vis)  && !M.client?.holder)))
-					M.show_message("<span class='game say'><span class='name'>[src.name]</span> [w_not_heard].</span>", 2)
+				(!(client?.prefs?.read_preference(/datum/preference/toggle/whisubtle_vis) || (isbelly(M.loc) && src == M.loc:owner))  && !check_rights_for(M.client, R_HOLDER))))
+					M.show_message(span_game(span_say(span_name(src.name) + " [w_not_heard].")), 2)
 					return
-				//VOREStation Add End
 
 				var/dst = get_dist(get_turf(M),get_turf(src))
 				var/runechat_enabled = M.client?.prefs?.read_preference(/datum/preference/toggle/runechat_mob)
@@ -386,7 +403,7 @@ var/list/channel_to_radio_key = new
 								images_to_clients[I2] |= M.client
 								M << I2
 					if(dst > w_scramble_range && dst <= world.view) //Inside whisper 'visible' range
-						M.show_message("<span class='game say'><span class='name'>[name]</span> [w_not_heard].</span>", 2)
+						M.show_message(span_game(span_say(span_name(name) + " [w_not_heard].")), 2)
 
 	//Object message delivery
 	for(var/obj/O in listening_obj)
@@ -405,27 +422,66 @@ var/list/channel_to_radio_key = new
 					C.images -= I
 			qdel(I)
 
-	var/ourfreq = null
-	if(voice_freq > 0 )
-		ourfreq = voice_freq
 	//Log the message to file
 	if(message_mode)
 		message = "([message_mode == "headset" ? "Common" : capitalize(message_mode)]) [message]" //Adds radio keys used if available
 	if(whispering)
 		if(do_sound && message)
-			playsound(T, pick(voice_sounds_list), 25, TRUE, extrarange = -6, falloff = 1 , is_global = TRUE, frequency = ourfreq, ignore_walls = FALSE, preference = /datum/preference/toggle/whisper_sounds)
+			blooploop(message, extrarange = -6, volume = 25, sound_preference = /datum/preference/toggle/whisper_sounds)
+			// playsound(T, pick(voice_sounds_list), 25, TRUE, extrarange = -6, falloff = 1 , is_global = TRUE, frequency = ourfreq, ignore_walls = FALSE, preference = /datum/preference/toggle/whisper_sounds)
 
-		log_whisper(message, src)
+		log_talk(message, LOG_WHISPER, color="#aeaeae")
 	else
 		if(do_sound && message)
-			playsound(T, pick(voice_sounds_list), 75, TRUE, falloff = 1 , is_global = TRUE, frequency = ourfreq, ignore_walls = FALSE, preference = /datum/preference/toggle/say_sounds)
-		log_say(message, src)
+			blooploop(message, volume = 75)
+			// playsound(T, pick(voice_sounds_list), 75, TRUE, falloff = 1 , is_global = TRUE, frequency = ourfreq, ignore_walls = FALSE, preference = /datum/preference/toggle/say_sounds)
+		log_talk(message, LOG_SAY, color="#c0c0c0")
 	return 1
 
-/mob/living/proc/say_signlang(var/message, var/verb="gestures", var/verb_understood="gestures", var/datum/language/language, var/type = 1)
+/*************************************************************************/
+/* HEAVILY SIMPLIFIED VARIANT OF BLOOPERS FROM Citadel                   */
+// https://github.com/Citadel-Station-13/Citadel-Station-13/pull/15677   */
+/*********************(***************************************************/
+#define BLOOPER_SPEED 6
+#define BLOOPER_SPEED_BASELINE 4
+#define BLOOPER_MAX_BLOOPERS 24
+#define BLOOPER_MAX_TIME (1.5 SECONDS)
+
+/mob/living/proc/blooper(extrarange = 0, volume, sound_preference = /datum/preference/toggle/bloop_sounds)
+	playsound(\
+		src,\
+		pick(voice_sounds_list),\
+		volume,\
+		vary = TRUE,\
+		extrarange = extrarange,\
+		falloff = 1,\
+		is_global = TRUE,\
+		frequency = voice_freq > 0 ? voice_freq : null,\
+		ignore_walls = FALSE,\
+		preference = sound_preference,
+	)
+
+/mob/living/proc/blooploop(message, extrarange = 0, volume, sound_preference = /datum/preference/toggle/say_sounds, bloop_preference = /datum/preference/toggle/bloop_sounds)
+	var/bloopers = min(round((LAZYLEN(message) / BLOOPER_SPEED)) + 1, BLOOPER_MAX_BLOOPERS)
+	var/total_delay
+	playsound(src, pick(voice_sounds_list), volume, TRUE, extrarange = extrarange, falloff = 1 , is_global = TRUE, frequency = voice_freq > 0 ? voice_freq : null, ignore_walls = FALSE, preference = sound_preference)
+	for(var/i in 1 to bloopers)
+		if(total_delay > BLOOPER_MAX_TIME)
+			break
+		addtimer(CALLBACK(src, PROC_REF(blooper), extrarange, volume, bloop_preference), total_delay)
+		total_delay += rand(\
+			DS2TICKS(BLOOPER_SPEED / BLOOPER_SPEED_BASELINE), \
+			DS2TICKS(BLOOPER_SPEED / BLOOPER_SPEED_BASELINE) + DS2TICKS(BLOOPER_SPEED / BLOOPER_SPEED_BASELINE)) TICKS
+
+#undef BLOOPER_SPEED
+#undef BLOOPER_SPEED_BASELINE
+#undef BLOOPER_MAX_BLOOPERS
+#undef BLOOPER_MAX_TIME
+
+/mob/living/proc/say_signlang(message, verb="gestures", verb_understood="gestures", datum/language/language, type = 1)
 	var/turf/T = get_turf(src)
 	//We're in something, gesture to people inside the same thing
-	if(loc != T)
+	if(loc != T && !istype(loc, /obj/item/holder)) // Partially fixes sign language while being held.
 		for(var/mob/M in loc)
 			M.hear_signlang(message, verb, verb_understood, language, src, type)
 

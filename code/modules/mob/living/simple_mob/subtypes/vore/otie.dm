@@ -49,6 +49,11 @@
 
 	allow_mind_transfer = TRUE
 
+	can_be_drop_prey = FALSE
+	species_sounds = "Canine"
+	pain_emote_1p = list("yelp", "whine", "bark", "growl")
+	pain_emote_3p = list("yelps", "whines", "barks", "growls")
+
 // Activate Noms!
 
 /mob/living/simple_mob/vore/otie
@@ -234,31 +239,31 @@
 	icon_living = "hotiesc"
 	icon_rest = "hotiesc_rest"
 
-/mob/living/simple_mob/vore/otie/attackby(var/obj/item/O, var/mob/user) // Trade donuts for bellybrig victims.
-	if(istype(O, /obj/item/weapon/reagent_containers/food))
+/mob/living/simple_mob/vore/otie/attackby(obj/item/O, mob/user) // Trade donuts for bellybrig victims.
+	if(istype(O, /obj/item/reagent_containers/food))
 		qdel(O)
 		playsound(src,'sound/items/eatfood.ogg', rand(10,50), 1)
 		if(!has_AI())//No autobarf on player control.
 			return
-		if(istype(O, /obj/item/weapon/reagent_containers/food/snacks/donut) && istype(src, /mob/living/simple_mob/vore/otie/security))
-			to_chat(user,"<span class='notice'>The guard pup accepts your offer for their catch.</span>")
+		if(istype(O, /obj/item/reagent_containers/food/snacks/donut) && istype(src, /mob/living/simple_mob/vore/otie/security))
+			to_chat(user,span_notice("The guard pup accepts your offer for their catch."))
 			release_vore_contents()
 		else if(prob(2)) //Small chance to get prey out from non-sec oties.
-			to_chat(user,"<span class='notice'>The pup accepts your offer for their catch.</span>")
+			to_chat(user,span_notice("The pup accepts your offer for their catch."))
 			release_vore_contents()
 		return
 	. = ..()
 
-/mob/living/simple_mob/vore/otie/security/feed_grabbed_to_self(var/mob/living/user, var/mob/living/prey) // Make the gut start out safe for bellybrigging.
+/mob/living/simple_mob/vore/otie/security/feed_grabbed_to_self(mob/living/user, mob/living/prey) // Make the gut start out safe for bellybrigging.
 	if(ishuman(prey))
 		vore_selected.digest_mode = DM_HOLD
 		if(check_threat(prey) >= 4)
-			global_announcer.autosay("[src] is detaining suspect <b>[target_name(prey)]</b> in <b>[get_area(src)]</b>.", "SmartCollar oversight", "Security")
+			GLOB.global_announcer.autosay("[src] is detaining suspect <b>[target_name(prey)]</b> in <b>[get_area(src)]</b>.", "SmartCollar oversight", "Security")
 	if(istype(prey,/mob/living/simple_mob/animal/passive/mouse))
 		vore_selected.digest_mode = DM_DIGEST
 	. = ..()
 
-/mob/living/simple_mob/vore/otie/security/proc/check_threat(var/mob/living/M)
+/mob/living/simple_mob/vore/otie/security/proc/check_threat(mob/living/M)
 	if(!M || !ishuman(M) || M.stat == DEAD || src == M)
 		return 0
 	return M.assess_perp(0, 0, 0, check_records, check_arrest)
@@ -276,11 +281,15 @@
 	switch(M.a_intent)
 		if(I_HELP)
 			if(health > 0)
-				M.visible_message("<span class='notice'>[M] [response_help] \the [src].</span>")
+				if(M.zone_sel.selecting == BP_GROIN)
+					if(M.vore_bellyrub(src))
+						return
+				M.visible_message(span_notice("[M] [response_help] \the [src]."))
 				if(has_AI())
 					var/datum/ai_holder/AI = ai_holder
 					AI.set_stance(STANCE_IDLE)
 					if(prob(tame_chance))
+						AI.violent_breakthrough = FALSE
 						AI.hostile = FALSE
 						friend = M
 						AI.set_follow(friend)
@@ -313,8 +322,8 @@
 	. = ..()
 	if(!riding_datum)
 		riding_datum = new /datum/riding/simple_mob(src)
-	verbs |= /mob/living/simple_mob/proc/animal_mount
-	verbs |= /mob/living/proc/toggle_rider_reins
+	add_verb(src, /mob/living/simple_mob/proc/animal_mount)
+	add_verb(src, /mob/living/proc/toggle_rider_reins)
 	movement_cooldown = 0
 
 /mob/living/simple_mob/vore/otie/MouseDrop_T(mob/living/M, mob/living/user)
@@ -329,7 +338,7 @@
 
 /datum/ai_holder/simple_mob/melee/evasive/otie
 
-/datum/ai_holder/simple_mob/melee/evasive/otie/New(var/mob/living/simple_mob/vore/otie/new_holder)
+/datum/ai_holder/simple_mob/melee/evasive/otie/New(mob/living/simple_mob/vore/otie/new_holder)
 	.=..()
 	if(new_holder.tamed)
 		hostile = FALSE

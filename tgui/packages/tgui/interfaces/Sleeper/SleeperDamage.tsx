@@ -1,9 +1,8 @@
-import { toFixed } from 'common/math';
+import { useBackend } from 'tgui/backend';
+import { LabeledList, ProgressBar, Section } from 'tgui-core/components';
 
-import { useBackend } from '../../backend';
-import { LabeledList, ProgressBar, Section } from '../../components';
 import { damageRange, damages } from './constants';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const SleeperDamage = (props) => {
   const { data } = useBackend<Data>();
@@ -20,7 +19,7 @@ export const SleeperDamage = (props) => {
               value={occupant[d[1]] / 100}
               ranges={damageRange}
             >
-              {toFixed(occupant[d[1]])}
+              {occupant[d[1]].toFixed()}
             </ProgressBar>
           </LabeledList.Item>
         ))}

@@ -21,15 +21,13 @@
 	language = LANGUAGE_LLEILL
 	name_language = LANGUAGE_LLEILL
 
-	flags =  NO_SCAN | NO_MINOR_CUT | NO_INFECT |  NO_HALLUCINATION
+	flags =  NO_SLEEVE | NO_MINOR_CUT | NO_INFECT |  NO_HALLUCINATION
 	spawn_flags = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
 	appearance_flags = HAS_HAIR_COLOR | HAS_LIPS | HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_UNDERWEAR
 
 	max_age = 200
 
 	economic_modifier = 15
-
-	digi_allowed = TRUE
 
 	//Specific abilities
 
@@ -65,12 +63,12 @@
 	water_breather = TRUE
 
 	var/list/valid_transform_species = list(
-		"Human", "Unathi", "Tajara", "Skrell",
-		"Diona", "Teshari", "Monkey","Sergal",
-		"Akula","Nevrean","Zorren",
-		"Fennec", "Vulpkanin", "Vasilissan",
-		"Rapala", "Neaera", "Stok", "Farwa", "Sobaka",
-		"Wolpin", "Saru", "Sparra", "Lleill")
+		SPECIES_HUMAN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL,
+		SPECIES_DIONA, SPECIES_TESHARI, SPECIES_MONKEY, SPECIES_SERGAL,
+		SPECIES_AKULA, SPECIES_NEVREAN, SPECIES_ZORREN_HIGH,
+		SPECIES_FENNEC, SPECIES_VULPKANIN, SPECIES_VASILISSAN,
+		SPECIES_RAPALA, SPECIES_MONKEY_SKRELL, SPECIES_MONKEY_UNATHI, SPECIES_MONKEY_TAJ, SPECIES_MONKEY_AKULA,
+		SPECIES_MONKEY_VULPKANIN, SPECIES_MONKEY_SERGAL, SPECIES_MONKEY_NEVREAN, SPECIES_LLEILL)
 
 	// Looks like a lot but the majority of these are just to change their appearance.
 	inherent_verbs = list(
@@ -82,7 +80,10 @@
 		/mob/living/carbon/human/proc/shapeshifter_select_wings,
 		/mob/living/carbon/human/proc/shapeshifter_select_tail,
 		/mob/living/carbon/human/proc/shapeshifter_select_ears,
+		/mob/living/carbon/human/proc/shapeshifter_select_secondary_ears,
 		/mob/living/proc/set_size,
+		/mob/living/carbon/human/proc/shapeshifter_copy_body,
+		/mob/living/carbon/human/proc/shapeshifter_regenerate,
 //		/mob/living/carbon/human/proc/lleill_invisibility,
 //		/mob/living/carbon/human/proc/lleill_transmute,
 //		/mob/living/carbon/human/proc/lleill_rings,
@@ -124,72 +125,72 @@
 	base_species = SPECIES_LLEILL
 
 	var/list/lleill_abilities = list(/datum/power/lleill/invisibility,
-									   /datum/power/lleill/transmute,
-									   /datum/power/lleill/rings,
-									   /datum/power/lleill/contact,
-									   /datum/power/lleill/alchemy,
-									   /datum/power/lleill/beastform)
+										/datum/power/lleill/transmute,
+										/datum/power/lleill/rings,
+										/datum/power/lleill/contact,
+										/datum/power/lleill/alchemy,
+										/datum/power/lleill/beastform)
 
 	var/list/lleill_ability_datums = list()
 
 // Shapeshifters have some behaviour that doesn't play well with this species so I have taken the main parts needed for here.
 
-/datum/species/lleill/get_valid_shapeshifter_forms(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_valid_shapeshifter_forms(mob/living/carbon/human/H)
 	return valid_transform_species
 
-/datum/species/lleill/get_icobase(var/mob/living/carbon/human/H, var/get_deform)
+/datum/species/lleill/get_icobase(mob/living/carbon/human/H, get_deform)
 	if(!H) return ..(null, get_deform)
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.type == src.type) return ..(H, get_deform)
 	return S.get_icobase(H,get_deform)
 
-/datum/species/lleill/get_race_key(var/mob/living/carbon/human/H)
-	return "[..()]-[wrapped_species_by_ref["\ref[H]"]]"
+/datum/species/lleill/get_race_key(mob/living/carbon/human/H)
+	return "[..()]-[GLOB.wrapped_species_by_ref["\ref[H]"]]"
 
-/datum/species/lleill/get_bodytype(var/mob/living/carbon/human/H)
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+/datum/species/lleill/get_bodytype(mob/living/carbon/human/H)
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!H || !S) return ..()
 	if(S.type == src.type) return ..(H)
 	return S.get_bodytype(H)
 
-/datum/species/lleill/get_blood_mask(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_blood_mask(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_blood_mask(H)
 
-/datum/species/lleill/get_damage_mask(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_damage_mask(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_damage_mask(H)
 
-/datum/species/lleill/get_damage_overlays(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_damage_overlays(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_damage_overlays(H)
 
-/datum/species/lleill/get_tail(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_tail(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_tail(H)
 
-/datum/species/lleill/get_tail_animation(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_tail_animation(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_tail_animation(H)
 
-/datum/species/lleill/get_tail_hair(var/mob/living/carbon/human/H)
+/datum/species/lleill/get_tail_hair(mob/living/carbon/human/H)
 	if(!H) return ..()
-	var/datum/species/S = GLOB.all_species[wrapped_species_by_ref["\ref[H]"]]
+	var/datum/species/S = GLOB.all_species[GLOB.wrapped_species_by_ref["\ref[H]"]]
 	if(!S || S.name == src.name)
 		return ..()
 	return S?.get_tail_hair(H)
@@ -200,13 +201,13 @@
 		var/datum/power/lleill/LP = new power(src)
 		lleill_ability_datums.Add(LP)
 
-/datum/species/lleill/proc/add_lleill_abilities(var/mob/living/carbon/human/H)
-	if(!H.ability_master || !istype(H.ability_master, /obj/screen/movable/ability_master/lleill))
+/datum/species/lleill/proc/add_lleill_abilities(mob/living/carbon/human/H)
+	if(!H.ability_master || !istype(H.ability_master, /atom/movable/screen/movable/ability_master/lleill))
 		H.ability_master = null
-		H.ability_master = new /obj/screen/movable/ability_master/lleill(H)
+		H.ability_master = new /atom/movable/screen/movable/ability_master/lleill(H)
 	for(var/datum/power/lleill/P in lleill_ability_datums)
 		if(!(P.verbpath in H.verbs))
-			H.verbs += P.verbpath
+			add_verb(H, P.verbpath)
 			H.ability_master.add_lleill_ability(
 					object_given = H,
 					verb_given = P.verbpath,
@@ -216,13 +217,13 @@
 					)
 	spawn (50)
 		if(H.lleill_display)
-			H.lleill_display.invisibility = 0
+			H.lleill_display.invisibility = INVISIBILITY_NONE
 			H.lleill_display.icon_state = "lleill-4"
 
-/datum/species/proc/update_lleill_hud(var/mob/living/carbon/human/H)
-	var/relative_energy = ((lleill_energy/lleill_energy_max)*100)
+/datum/species/proc/update_lleill_hud(mob/living/carbon/human/H)
+	var/relative_energy = lleill_energy_max ? ((lleill_energy/lleill_energy_max)*100) : 0
 	if(H.lleill_display)
-		H.lleill_display.invisibility = 0
+		H.lleill_display.invisibility = INVISIBILITY_NONE
 		switch(relative_energy)
 			if(0 to 24)
 				H.lleill_display.icon_state = "lleill-0"
@@ -236,7 +237,6 @@
 				H.lleill_display.icon_state = "lleill-4"
 	return
 
-/datum/species/lleill/add_inherent_verbs(var/mob/living/carbon/human/H)
+/datum/species/lleill/add_inherent_verbs(mob/living/carbon/human/H)
 	..()
 	add_lleill_abilities(H)
-

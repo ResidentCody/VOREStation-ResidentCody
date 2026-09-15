@@ -1,8 +1,7 @@
-import { toFixed } from 'common/math';
+import { Box, LabeledList, ProgressBar, Section } from 'tgui-core/components';
 
-import { Box, LabeledList, ProgressBar, Section } from '../../components';
 import { damageRange, damages, stats, tempColors } from './constants';
-import { occupant } from './types';
+import type { occupant } from './types';
 
 export const OperatingComputerPatient = (props: { occupant: occupant }) => {
   const { occupant } = props;
@@ -27,7 +26,7 @@ export const OperatingComputerPatient = (props: { occupant: occupant }) => {
             />
           </LabeledList.Item>
           {damages.map((d, i) => (
-            <LabeledList.Item key={i} label={d[0] + ' Damage'}>
+            <LabeledList.Item key={i} label={`${d[0]} Damage`}>
               <ProgressBar
                 key={i}
                 minValue={0}
@@ -35,7 +34,7 @@ export const OperatingComputerPatient = (props: { occupant: occupant }) => {
                 value={occupant[d[1]] / 100}
                 ranges={damageRange}
               >
-                {toFixed(occupant[d[1]])}
+                {occupant[d[1]].toFixed()}
               </ProgressBar>
             </LabeledList.Item>
           ))}
@@ -46,7 +45,7 @@ export const OperatingComputerPatient = (props: { occupant: occupant }) => {
               value={occupant.bodyTemperature / occupant.maxTemp}
               color={tempColors[occupant.temperatureSuitability + 3]}
             >
-              {toFixed(occupant.btCelsius)}&deg;C, {toFixed(occupant.btFaren)}
+              {occupant.btCelsius.toFixed()}&deg;C, {occupant.btFaren.toFixed()}
               &deg;F
             </ProgressBar>
           </LabeledList.Item>
@@ -74,7 +73,7 @@ export const OperatingComputerPatient = (props: { occupant: occupant }) => {
         </LabeledList>
       </Section>
       <Section title="Current Procedure">
-        {occupant.surgery && occupant.surgery.length ? (
+        {occupant.surgery?.length ? (
           <LabeledList>
             {occupant.surgery.map((limb) => (
               <LabeledList.Item key={limb.name} label={limb.name}>

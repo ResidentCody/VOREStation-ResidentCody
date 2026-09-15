@@ -1,5 +1,6 @@
-import { Box, Flex, LabeledList, Section } from '../../components';
-import { sensor } from './types';
+import { Box, LabeledList, Section, Stack } from 'tgui-core/components';
+
+import type { sensor } from './types';
 
 export const AtmoControlSensors = (props: { sensors: sensor[] }) => {
   const { sensors } = props;
@@ -30,10 +31,17 @@ const AtmoSensor = (props: { sensor: sensor }) => {
     return <Box color="bad">UNABLE TO FIND SENSOR</Box>;
   }
 
-  const { pressure, temperature, oxygen, nitrogen, carbon_dioxide, phoron } =
-    sensor.sensor_data;
+  const {
+    pressure,
+    temperature,
+    oxygen,
+    nitrogen,
+    carbon_dioxide,
+    phoron,
+    methane,
+  } = sensor.sensor_data;
 
-  let labeledListContents: React.JSX.Element[] = [];
+  const labeledListContents: React.JSX.Element[] = [];
   if (pressure) {
     labeledListContents.push(
       <LabeledList.Item label="Pressure">{pressure} kPa</LabeledList.Item>,
@@ -49,14 +57,15 @@ const AtmoSensor = (props: { sensor: sensor }) => {
   if (oxygen || nitrogen || carbon_dioxide || phoron) {
     labeledListContents.push(
       <LabeledList.Item label="Gas Composition">
-        <Flex justify="space-around">
-          {oxygen ? <Flex.Item>({oxygen}% O²)</Flex.Item> : null}
-          {nitrogen ? <Flex.Item>({nitrogen}% N²)</Flex.Item> : null}
+        <Stack justify="space-around">
+          {oxygen ? <Stack.Item>({oxygen}% O²)</Stack.Item> : null}
+          {nitrogen ? <Stack.Item>({nitrogen}% N²)</Stack.Item> : null}
           {carbon_dioxide ? (
-            <Flex.Item>({carbon_dioxide}% CO²)</Flex.Item>
+            <Stack.Item>({carbon_dioxide}% CO²)</Stack.Item>
           ) : null}
-          {phoron ? <Flex.Item>({phoron}% TX)</Flex.Item> : null}
-        </Flex>
+          {phoron ? <Stack.Item>({phoron}% PH)</Stack.Item> : null}
+          {methane ? <Stack.Item>({methane}% CH₄)</Stack.Item> : null}
+        </Stack>
       </LabeledList.Item>,
     );
   }

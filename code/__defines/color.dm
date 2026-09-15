@@ -96,6 +96,8 @@
 #define COLOR_NUKIES_YELLOW    "#ffe900"
 #define COLOR_DESATTI_PRPLOW   "#3300cc"
 #define COLOR_DESATTI_PRPHI    "#6600cc"
+#define COLOR_FULL_TONER_BLACK "#101010"
+#define COLOR_VOID_PURPLE "#53277E"
 
 #define	PIPE_COLOR_GREY        "#808080"
 #define	PIPE_COLOR_RED         "#ff0000"
@@ -202,10 +204,10 @@
 //Lighting values used by the station lights
 #define LIGHT_COLOR_FLUORESCENT_TUBE "#E0EFFF"
 #define LIGHT_COLOR_FLUORESCENT_FLASHLIGHT "#CDDDFF"
-#define LIGHT_COLOR_INCANDESCENT_TUBE "#fffed9"
-#define LIGHT_COLOR_INCANDESCENT_BULB "#ffe7ce"
+#define LIGHT_COLOR_INCANDESCENT_TUBE "#E0EFF0"
+#define LIGHT_COLOR_INCANDESCENT_BULB "#FFFEB8"
 #define LIGHT_COLOR_INCANDESCENT_FLASHLIGHT "#FFCC66"
 #define LIGHT_COLOR_NIGHTSHIFT "#EFCC86"
 
 //Fake ambient occlusion filter
-#define AMBIENT_OCCLUSION filter(type="drop_shadow", x=0, y=-2, size=4, offset=3, color="#04080F80")
+#define AMBIENT_OCCLUSION filter(type="drop_shadow", x=0, y=-1, size=2, offset=2, color="#04080F55")

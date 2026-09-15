@@ -17,23 +17,23 @@
 	var/energy_cost = 75
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't go invisible when weakened like this.</span>")
+		to_chat(src, span_warning("You can't go invisible when weakened like this."))
 		return
 
 	if(!cloaked)
 		if(species.lleill_energy < energy_cost)
-			to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+			to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 			return
 		cloak()
 		block_hud = 1
 		hud_updateflag = 1
-		to_chat(src, "<span class='warning'>Your fur shimmers and shifts around you, hiding you from the naked eye.</span>")
+		to_chat(src, span_warning("Your fur shimmers and shifts around you, hiding you from the naked eye."))
 		species.lleill_energy -= energy_cost
 	else
 		uncloak()
 		block_hud = 0
 		hud_updateflag = 1
-		to_chat(src, "<span class='warning'>The brustling of your fur settles down and you become visible once again.</span>")
+		to_chat(src, span_warning("The brustling of your fur settles down and you become visible once again."))
 	species.update_lleill_hud(src)
 
 /mob/living/carbon/human/proc/lleill_select_shape()
@@ -47,20 +47,20 @@
 	last_special = world.time + 50
 
 	var/new_species = null
-	new_species = tgui_input_list(usr, "Please select a species to emulate.", "Shapeshifter Body", species.get_valid_shapeshifter_forms(src))
+	new_species = tgui_input_list(src, "Please select a species to emulate.", "Shapeshifter Body", species.get_valid_shapeshifter_forms(src))
 
-	if(!new_species || !GLOB.all_species[new_species] || wrapped_species_by_ref["\ref[src]"] == new_species)
+	if(!new_species || !GLOB.all_species[new_species] || GLOB.wrapped_species_by_ref["\ref[src]"] == new_species)
 		return
 	lleill_change_shape(new_species)
 
-/mob/living/carbon/human/proc/lleill_change_shape(var/new_species = null)
+/mob/living/carbon/human/proc/lleill_change_shape(new_species = null)
 	if(!new_species)
 		return
 
-	wrapped_species_by_ref["\ref[src]"] = new_species
+	GLOB.wrapped_species_by_ref["\ref[src]"] = new_species
 	dna.base_species = new_species
 	species.base_species = new_species
-	visible_message("<b>\The [src]</b> shifts and contorts, taking the form of \a [new_species]!")
+	visible_message(span_infoplain(span_bold("\The [src]") + " shifts and contorts, taking the form of \a [new_species]!"))
 	regenerate_icons()
 
 /mob/living/carbon/human/proc/lleill_select_colour()
@@ -73,12 +73,12 @@
 
 	last_special = world.time + 50
 
-	var/new_skin = input(usr, "Please select a new body color.", "Shapeshifter Colour", rgb(r_skin, g_skin, b_skin)) as null|color
+	var/new_skin = tgui_color_picker(src, "Please select a new body color.", "Shapeshifter Colour", rgb(r_skin, g_skin, b_skin))
 	if(!new_skin)
 		return
 	lleill_set_colour(new_skin)
 
-/mob/living/carbon/human/proc/lleill_set_colour(var/new_skin)
+/mob/living/carbon/human/proc/lleill_set_colour(new_skin)
 
 	r_skin =   hex2num(copytext(new_skin, 2, 4))
 	g_skin =   hex2num(copytext(new_skin, 4, 6))
@@ -104,30 +104,33 @@
 	set category = "Abilities"
 
 	var/list/transmute_list = list(
-		"Transparent Glamour" = /obj/item/weapon/potion_material/glamour_transparent,
-		"Shrinking Glamour" = /obj/item/weapon/potion_material/glamour_shrinking,
-		"Twinkling Glamour" = /obj/item/weapon/potion_material/glamour_twinkling,
-		"Glamour Shard" = /obj/item/weapon/potion_material/glamour_shard,
+		"Transparent Glamour" = /obj/item/potion_material/glamour_transparent,
+		"Shrinking Glamour" = /obj/item/potion_material/glamour_shrinking,
+		"Twinkling Glamour" = /obj/item/potion_material/glamour_twinkling,
+		"Unstable Glamour" = /obj/item/glamour_unstable,
+		"Glamour Shard" = /obj/item/potion_material/glamour_shard,
 		"Glamour Cell" = /obj/item/capture_crystal/glamour,
 		"Face of Glamour" = /obj/item/glamour_face,
-		"Speaking Glamour" = /obj/item/device/universal_translator/glamour,
+		"Speaking Glamour" = /obj/item/universal_translator/glamour,
 		"Glamour Bubble" = /obj/item/clothing/mask/gas/glamour,
-		"Pocket of Glamour" = /obj/item/clothing/under/permit/glamour
+		"Pocket of Glamour" = /obj/item/clothing/under/permit/glamour,
+		"glamour arrow" = /obj/item/arrow/standard/glamour,
+		"glamour bow" = /obj/item/gun/launcher/crossbow/bow/glamour
 		)
 
 	var/energy_cost = 50
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't go do that when weakened like this.</span>")
+		to_chat(src, span_warning("You can't go do that when weakened like this."))
 		return
 
 	var/obj/item/I = get_active_hand()
 	if(!I)
-		to_chat(src, "<span class='warning'>You have no item in your active hand.</span>")
+		to_chat(src, span_warning("You have no item in your active hand."))
 		return
 
 	var/choice = tgui_input_list(src, "Choose a glamour to transmute the item into:", "Transmutation", transmute_list)
@@ -138,17 +141,17 @@
 
 
 	if(!get_active_hand(I))
-		to_chat(src, "<span class='warning'>The item is no longer in your hands.</span>")
+		to_chat(src, span_warning("The item is no longer in your hands."))
 		return
 	else
-		visible_message("<b>\The [src]</b> begins to change the form of \the [I].")
-		if(!do_after(usr, 10 SECONDS, I, exclusive = TASK_USER_EXCLUSIVE))
-			visible_message("<b>\The [src]</b> leaves \the [I] in its original form.")
+		visible_message(span_infoplain(span_bold("\The [src]") + " begins to change the form of \the [I]."))
+		if(!do_after(src, 10 SECONDS, target = I))
+			visible_message(span_infoplain(span_bold("\The [src]") + " leaves \the [I] in its original form."))
 			return 0
-		visible_message("<b>\The [src]</b> transmutes \the [I] into \the [transmute_product.name].")
+		visible_message(span_infoplain(span_bold("\The [src]") + " transmutes \the [I] into \the [transmute_product.name]."))
 		drop_item(I)
 		qdel(I)
-		var/spawnloc = get_turf(usr)
+		var/spawnloc = get_turf(src)
 		var/obj/item/N = new transmute_product(spawnloc)
 		put_in_active_hand(N)
 		species.lleill_energy -= energy_cost
@@ -170,22 +173,22 @@
 	var/energy_cost_tele = 50
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't go do that when weakened like this.</span>")
+		to_chat(src, span_warning("You can't go do that when weakened like this."))
 		return
 	if(buckled)
-		to_chat(src,"<span class='warning'>You can't do that when restrained.</span>")
+		to_chat(src,span_warning("You can't do that when restrained."))
 
 	var/r_action = tgui_alert(src, "What would you like to do with your rings? You currently have [species.lleill_energy] energy remaining.", "Actions", list("Spawn New Ring ([energy_cost_spawn])", "Teleport to Ring ([energy_cost_tele])", "Cancel"))
 	if(!r_action || r_action == "Cancel")
 		return
 	if(findtext(r_action,"Spawn New Ring"))
 		if(species.lleill_energy < energy_cost_spawn)
-			to_chat(src, "<span class='warning'>You do not have enough energy to do that!</span>")
+			to_chat(src, span_warning("You do not have enough energy to do that!"))
 			return
-		if(!do_after(src, 10 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
-			src.visible_message("<b>\The [src]</b> begins to form white rings on the ground.")
+		if(!do_after(src, 10 SECONDS, target = src))
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " begins to form white rings on the ground."))
 			return 0
-		to_chat(src, "<span class='warning'>You place a new glamour ring at your feet.</span>")
+		to_chat(src, span_warning("You place a new glamour ring at your feet."))
 		var/spawnloc = get_turf(src)
 		var/obj/structure/glamour_ring/R = new(spawnloc)
 		R.connected_mob = src
@@ -193,13 +196,16 @@
 		species.lleill_energy -= energy_cost_spawn
 	if(findtext(r_action,"Teleport to Ring"))
 		if(species.lleill_energy < energy_cost_tele)
-			to_chat(src, "<span class='warning'>You do not have enough energy to do that!</span>")
+			to_chat(src, span_warning("You do not have enough energy to do that!"))
 			return
 		if(!src.teleporters.len)
-			to_chat(src, "<span class='warning'>You need to place rings to teleport to them.</span>")
+			to_chat(src, span_warning("You need to place rings to teleport to them."))
 			return
 		else
 			var/obj/structure/glamour_ring/R = tgui_input_list(src, "Where do you wish to teleport?", "Teleport", src.teleporters)
+
+			if(!R)
+				return
 
 			var/datum/effect/effect/system/spark_spread/spk
 			spk = new(src)
@@ -227,8 +233,8 @@
 				if(target_list.len)
 					for(var/mob/living/M in target_list)
 						if(M.devourable && M.can_be_drop_prey)
-							M.forceMove(vore_selected)
-							to_chat(M,"<span class='vwarning'>In a bright flash of white light, you suddenly find yourself trapped in \the [src]'s [vore_selected.name]!</span>")
+							vore_selected.nom_atom(M)
+							to_chat(M,span_vwarning("In a bright flash of white light, you suddenly find yourself trapped in \the [src]'s [vore_selected.get_belly_name()]!"))
 	species.update_lleill_hud(src)
 
 /datum/power/lleill/contact
@@ -257,11 +263,11 @@
 		)
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't go do that when weakened like this.</span>")
+		to_chat(src, span_warning("You can't go do that when weakened like this."))
 		return
 
 	var/list/targets = list()
-	for(var/mob/living/carbon/human/M in mob_list)
+	for(var/mob/living/carbon/human/M in GLOB.mob_list)
 		if(M.z != src.z || get_dist(src,M) > 1)
 			continue
 		if(src == M)
@@ -269,7 +275,7 @@
 		targets |= M
 
 	if(!targets)
-		to_chat(src, "<span class='warning'>There is nobody next to you.</span>")
+		to_chat(src, span_warning("There is nobody next to you."))
 		return
 	var/mob/living/carbon/human/chosen_target = tgui_input_list(src, "Who do you wish to take energy from?", "Make contact", targets)
 	if(!chosen_target)
@@ -285,43 +291,42 @@
 
 	var/accepted = tgui_alert(chosen_target, "Do you accept the [contact_type] physical contact from \the [src]?", "Actions", list("Yes", "No"))
 	if(get_dist(src,chosen_target) > 1)
-		to_chat(src, "<span class='warning'>You need to be standing next to [chosen_target].</span>")
+		to_chat(src, span_warning("You need to be standing next to [chosen_target]."))
 		return
 	if(!accepted || accepted == "No")
-		to_chat(src, "<span class='warning'>\The [chosen_target] refuses the contact.</span>")
+		to_chat(src, span_warning("\The [chosen_target] refuses the contact."))
 		return
 	if(accepted == "Yes")
 		if(contact_type == "Kiss (lips)")
-			src.visible_message("<b>\The [src]</b> presses their lips up against [chosen_target]'s own.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " presses their lips up against [chosen_target]'s own."))
 		if(contact_type == "Kiss (neck)")
-			src.visible_message("<b>\The [src]</b> presses their lips up against [chosen_target]'s neck.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " presses their lips up against [chosen_target]'s neck."))
 		if(contact_type == "Bite (neck)")
-			src.visible_message("<b>\The [src]</b> bites down on [chosen_target]'s neck.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " bites down on [chosen_target]'s neck."))
 		if(contact_type == "Bite (wrist)")
-			src.visible_message("<b>\The [src]</b> bites down on [chosen_target]'s wrist.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " bites down on [chosen_target]'s wrist."))
 		if(contact_type == "Hold Hand")
-			src.visible_message("<b>\The [src]</b> takes [chosen_target]'s hand into their own.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " takes [chosen_target]'s hand into their own."))
 		if(contact_type == "Embrace")
-			src.visible_message("<b>\The [src]</b> embraces [chosen_target].")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " embraces [chosen_target]."))
 		if(contact_type == "Stroke (hair)")
-			src.visible_message("<b>\The [src]</b> runs their hand through [chosen_target]'s hair.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " runs their hand through [chosen_target]'s hair."))
 		if(contact_type == "Boop (nose)")
-			src.visible_message("<b>\The [src]</b> boops [chosen_target] on the nose.")
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " boops [chosen_target] on the nose."))
 		if(contact_type == "Custom")
-			src.visible_message("[custom_text]")
-		if(!do_after(src, 10 SECONDS, chosen_target, exclusive = TASK_USER_EXCLUSIVE))
+			src.visible_message(span_infoplain("[custom_text]"))
+		if(!do_after(src, 10 SECONDS, target = chosen_target))
+			src.visible_message(span_infoplain(span_bold("\The [src]") + " and \the [chosen_target] break contact before energy has been transferred."))
 			return
-		else
-			src.visible_message("<b>\The [src]</b> and \the [chosen_target] break contact before energy has been transferred.")
-		src.visible_message("<b>\The [src]</b> and \the [chosen_target] complete their contact.")
+		src.visible_message(span_infoplain(span_bold("\The [src]") + " and \the [chosen_target] complete their contact."))
 		species.lleill_energy = species.lleill_energy_max
 		nutrition += (chosen_target.nutrition / 2)
-		to_chat(src, "<span class='warning'>You feel revitalised.</span>")
+		to_chat(src, span_warning("You feel revitalised."))
 		chosen_target.tiredness += 70
 		chosen_target.nutrition = max((chosen_target.nutrition / 2),75)
 		chosen_target.remove_blood(40) //removes enough blood to make them feel a bit woozy, mostly just for flavour
 		chosen_target.eye_blurry += 20
-		to_chat(chosen_target, "<span class='warning'>You feel considerably weakened for the moment.</span>")
+		to_chat(chosen_target, span_warning("You feel considerably weakened for the moment."))
 	species.update_lleill_hud(src)
 
 /datum/power/lleill/alchemy
@@ -339,35 +344,35 @@
 
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't go do that when weakened like this.</span>")
+		to_chat(src, span_warning("You can't go do that when weakened like this."))
 		return
 
-	var/obj/item/weapon/potion_material/I = get_active_hand()
+	var/obj/item/potion_material/I = get_active_hand()
 	if(!I)
-		to_chat(src, "<span class='warning'>You have no item in your active hand.</span>")
+		to_chat(src, span_warning("You have no item in your active hand."))
 		return
 
 	if(!istype(I))
-		to_chat(src, "<span class='warning'>\The [I] is not a potion material.</span>")
+		to_chat(src, span_warning("\The [I] is not a potion material."))
 		return
-	var/obj/item/weapon/reagent_containers/glass/bottle/potion/transmute_product = I.product_potion
+	var/obj/item/reagent_containers/glass/bottle/potion/transmute_product = I.product_potion
 
 	if(!get_active_hand(I))
-		to_chat(src, "<span class='warning'>The item is no longer in your hands.</span>")
+		to_chat(src, span_warning("The item is no longer in your hands."))
 		return
 	else
-		visible_message("<b>\The [src]</b> begins to change the form of \the [I].")
-		if(!do_after(usr, 10 SECONDS, I, exclusive = TASK_USER_EXCLUSIVE))
-			visible_message("<b>\The [src]</b> leaves \the [I] in its original form.")
+		visible_message(span_infoplain(span_bold("\The [src]") + " begins to change the form of \the [I]."))
+		if(!do_after(src, 10 SECONDS, target = I))
+			visible_message(span_infoplain(span_bold("\The [src]") + " leaves \the [I] in its original form."))
 			return 0
-		visible_message("<b>\The [src]</b> transmutes \the [I] into \the [transmute_product.name].")
+		visible_message(span_infoplain(span_bold("\The [src]") + " transmutes \the [I] into \the [transmute_product.name]."))
 		drop_item(I)
 		qdel(I)
-		var/spawnloc = get_turf(usr)
+		var/spawnloc = get_turf(src)
 		var/obj/item/N = new transmute_product(spawnloc)
 		put_in_active_hand(N)
 		species.lleill_energy -= energy_cost
@@ -389,41 +394,51 @@
 	var/energy_cost = 100
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
-	var/list/beast_options = list("Rabbit" = /mob/living/simple_mob/vore/rabbit,
-									"Red Panda" = /mob/living/simple_mob/vore/redpanda,
-									"Fennec" = /mob/living/simple_mob/vore/fennec,
+	var/list/beast_options = list("Armadillo" = /mob/living/simple_mob/animal/passive/armadillo,
+									"Azure Tit" = /mob/living/simple_mob/animal/passive/bird/azure_tit/beastmode,
+									"Bear" = /mob/living/simple_mob/animal/space/bear/brown/beastmode,
+									"Cat" = /mob/living/simple_mob/animal/passive/cat/black/beastmode,
+									"Chicken" = /mob/living/simple_mob/animal/passive/chicken,
+									"Cow" = /mob/living/simple_mob/animal/passive/cow,
+									"Dire Wolf" = /mob/living/simple_mob/vore/wolf/direwolf,
+									"Dog (Bull Terrier)" = /mob/living/simple_mob/animal/passive/dog/bullterrier,
+									"Dog (Corgi)" = /mob/living/simple_mob/animal/passive/dog/corgi,
+									"Dog (Tamaskan)" = /mob/living/simple_mob/animal/passive/dog/tamaskan,
+									"Duck" = /mob/living/simple_mob/animal/sif/duck,
+									"Fox" = /mob/living/simple_mob/animal/passive/fox/beastmode,
+									"Fox (Fennec)" = /mob/living/simple_mob/vore/fennec,
+									"Giant Bat" = /mob/living/simple_mob/vore/bat,
 									"Giant Frog" = /mob/living/simple_mob/vore/aggressive/frog,
 									"Giant Rat" = /mob/living/simple_mob/vore/aggressive/rat,
-									"Wolf" = /mob/living/simple_mob/vore/wolf,
-									"Dire Wolf" = /mob/living/simple_mob/vore/wolf/direwolf,
-									"Fox" = /mob/living/simple_mob/animal/passive/fox/beastmode,
-									"Panther" = /mob/living/simple_mob/vore/aggressive/panther,
 									"Giant Snake" = /mob/living/simple_mob/vore/aggressive/giant_snake,
-									"Otie" = /mob/living/simple_mob/vore/otie,
-									"Squirrel" = /mob/living/simple_mob/vore/squirrel,
-									"Raptor" = /mob/living/simple_mob/vore/raptor,
-									"Giant Bat" = /mob/living/simple_mob/vore/bat,
+									"Goat" = /mob/living/simple_mob/animal/goat,
+									"Goose" = /mob/living/simple_mob/animal/space/goose,
 									"Horse" = /mob/living/simple_mob/vore/horse,
 									"Horse (Big)" = /mob/living/simple_mob/vore/horse/big,
+									"Hyena" = /mob/living/simple_mob/animal/hyena,
 									"Kelpie" = /mob/living/simple_mob/vore/horse/kelpie,
-									"Bear" = /mob/living/simple_mob/animal/space/bear/brown/beastmode,
+									"Lion" = /mob/living/simple_mob/vore/retaliate/lion,
+									"Lizard" = /mob/living/simple_mob/animal/passive/lizard,
+									"Mouse" = /mob/living/simple_mob/animal/passive/mouse/beastmode,
+									"Otie" = /mob/living/simple_mob/vore/otie,
+									"Panther" = /mob/living/simple_mob/vore/aggressive/panther,
+									"Penguin" = /mob/living/simple_mob/animal/passive/penguin,
+									"Possum" = /mob/living/simple_mob/animal/passive/opossum/beastmode,
+									"Rabbit" = /mob/living/simple_mob/vore/rabbit,
+									"Raccoon" = /mob/living/simple_mob/animal/passive/raccoon,
+									"Raptor" = /mob/living/simple_mob/vore/raptor,
+									"Red Panda" = /mob/living/simple_mob/vore/redpanda,
+									"Reindeer" = /mob/living/simple_mob/vore/reindeer,
+									"Robin" = /mob/living/simple_mob/animal/passive/bird/european_robin/beastmode,
 									"Seagull" = /mob/living/simple_mob/vore/seagull,
 									"Sheep" = /mob/living/simple_mob/vore/sheep,
-									"Azure Tit" = /mob/living/simple_mob/animal/passive/bird/azure_tit/beastmode,
-									"Robin" = /mob/living/simple_mob/animal/passive/bird/european_robin/beastmode,
-									"Cat" = /mob/living/simple_mob/animal/passive/cat/black/beastmode,
-									"Tamaskan Dog" = /mob/living/simple_mob/animal/passive/dog/tamaskan,
-									"Corgi" = /mob/living/simple_mob/animal/passive/dog/corgi,
-									"Bull Terrier" = /mob/living/simple_mob/animal/passive/dog/bullterrier,
-									"Duck" = /mob/living/simple_mob/animal/sif/duck,
-									"Cow" = /mob/living/simple_mob/animal/passive/cow,
-									"Chicken" = /mob/living/simple_mob/animal/passive/chicken,
-									"Goat" = /mob/living/simple_mob/animal/goat,
-									"Penguin" = /mob/living/simple_mob/animal/passive/penguin,
-									"Goose" = /mob/living/simple_mob/animal/space/goose
+									"Slug" = /mob/living/simple_mob/vore/slug,
+									"Squirrel" = /mob/living/simple_mob/vore/squirrel,
+									"Wolf" = /mob/living/simple_mob/vore/wolf,
+									"Unicorn" = /mob/living/simple_mob/vore/horse/unicorn/beastmode
 									)
 
 	var/chosen_beast = tgui_input_list(src, "Which form would you like to take?", "Choose Beast Form", beast_options)
@@ -432,28 +447,24 @@
 		return
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
 	var/mob/living/M = src
-	log_debug("polymorph start")
 	if(!istype(M))
-		log_debug("polymorph istype")
 		return
 
 	if(M.stat)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph stat")
-		to_chat(src, "<span class='warning'>You can't do that in your condition.</span>")
+		to_chat(src, span_warning("You can't do that in your condition."))
 		return
 
 	if(M.health <= 10)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph injured")
-		to_chat(src, "<span class='warning'>You are too injured to transform into a beast.</span>")
+		to_chat(src, span_warning("You are too injured to transform into a beast."))
 		return
 
-	visible_message("<b>\The [src]</b> begins significantly shifting their form.")
-	if(!do_after(src, 10 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
-		visible_message("<b>\The [src]</b> ceases shifting their form.")
+	visible_message(span_infoplain(span_bold("\The [src]") + " begins significantly shifting their form."))
+	if(!do_after(src, 10 SECONDS, target = src))
+		visible_message(span_infoplain(span_bold("\The [src]") + " ceases shifting their form."))
 		return 0
 
 	var/image/coolanimation = image('icons/obj/glamour.dmi', null, "animation")
@@ -462,74 +473,24 @@
 	spawn(10)
 		src.overlays -= coolanimation
 
-		log_debug("polymorph not dead")
 		var/mob/living/new_mob = spawn_beast_mob(beast_options[chosen_beast])
 		new_mob.faction = M.faction
 
 		if(new_mob && isliving(new_mob))
 			species.lleill_energy -= energy_cost
-			log_debug("polymorph new_mob")
-			for(var/obj/belly/B as anything in new_mob.vore_organs)
-				log_debug("polymorph new_mob belly")
-				new_mob.vore_organs -= B
-				qdel(B)
-			new_mob.vore_organs = list()
-			new_mob.name = M.name
-			new_mob.real_name = M.real_name
-			new_mob.verbs |= /mob/living/proc/revert_beast_form
-			new_mob.verbs |= /mob/living/proc/set_size
-			for(var/lang in M.languages)
-				new_mob.languages |= lang
-			M.copy_vore_prefs_to_mob(new_mob)
-			new_mob.vore_selected = M.vore_selected
-			if(ishuman(M))
-				log_debug("polymorph ishuman part2")
-				var/mob/living/carbon/human/H = M
-				if(ishuman(new_mob))
-					log_debug("polymorph ishuman(newmob)")
-					var/mob/living/carbon/human/N = new_mob
-					N.gender = H.gender
-					N.identifying_gender = H.identifying_gender
-				else
-					log_debug("polymorph gender else")
-					new_mob.gender = H.gender
-			else
-				log_debug("polymorph gender else 2")
-				new_mob.gender = M.gender
-				if(ishuman(new_mob))
-					var/mob/living/carbon/human/N = new_mob
-					N.identifying_gender = M.gender
-
-			for(var/obj/belly/B as anything in M.vore_organs)
-				B.loc = new_mob
-				B.forceMove(new_mob)
-				B.owner = new_mob
-				M.vore_organs -= B
-				new_mob.vore_organs += B
-
-			new_mob.ckey = M.ckey
-			if(M.ai_holder && new_mob.ai_holder)
-				var/datum/ai_holder/old_AI = M.ai_holder
-				old_AI.set_stance(STANCE_SLEEP)
-				var/datum/ai_holder/new_AI = new_mob.ai_holder
-				new_AI.hostile = old_AI.hostile
-				new_AI.retaliate = old_AI.retaliate
-			M.loc = new_mob
-			M.forceMove(new_mob)
-			new_mob.tf_mob_holder = M
-			new_mob.visible_message("<b>\The [src]</b> has transformed into \the [chosen_beast]!")
+			add_verb(new_mob, /mob/living/proc/revert_beast_form)
+			add_verb(new_mob, /mob/living/proc/set_size)
+			add_verb(new_mob, /mob/living/simple_mob/proc/ColorMate)
+			transfer_mob_identity(new_mob)
+			new_mob.visible_message(span_infoplain(span_bold("\The [src]") + " has transformed into \the [chosen_beast]!"))
 	species.update_lleill_hud(src)
 
 
-/mob/living/carbon/human/proc/spawn_beast_mob(var/chosen_beast)
-	log_debug("polymorph proc spawn mob")
+/mob/living/carbon/human/proc/spawn_beast_mob(chosen_beast)
 	var/tf_type = chosen_beast
-	log_debug("polymorph [tf_type]")
 	if(!ispath(tf_type))
-		log_debug("polymorph tf_type fail")
 		return
-	log_debug("polymorph tf_type pass")
-	var/new_mob = new tf_type(get_turf(src))
+	var/new_mob = new tf_type(src.loc)
 	return new_mob
 
 /mob/living/proc/revert_beast_form()
@@ -538,16 +499,41 @@
 	set category = "Abilities"
 
 	if(stat)
-		to_chat(src, "<span class='warning'>You can't do that in your condition.</span>")
+		to_chat(src, span_warning("You can't do that in your condition."))
 		return
 
-	visible_message("<b>\The [src]</b> begins significantly shifting their form.")
-	if(!do_after(src, 10 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
-		visible_message("<b>\The [src]</b> ceases shifting their form.")
+	visible_message(span_infoplain(span_bold("\The [src]") + " begins significantly shifting their form."))
+	if(!do_after(src, 10 SECONDS, target = src))
+		visible_message(span_infoplain(span_bold("\The [src]") + " ceases shifting their form."))
 		return 0
-	visible_message("<b>\The [src]</b> has reverted to their original form.")
-	revert_mob_tf()
+	visible_message(span_infoplain(span_bold("\The [src]") + " has reverted to their original form."))
+	revert_beast_tf()
 
+/mob/living/proc/revert_beast_tf()
+	if(!tf_mob_holder)
+		return
+	var/mob/living/ourmob = tf_mob_holder
+	if(ourmob.ai_holder)
+		var/datum/ai_holder/our_AI = ourmob.ai_holder
+		our_AI.set_stance(STANCE_IDLE)
+	tf_mob_holder = null
+	ourmob.ckey = ckey
+	var/turf/beast_loc = src.loc
+	ourmob.loc = beast_loc
+	ourmob.forceMove(beast_loc)
+	ourmob.vore_selected = vore_selected
+	vore_selected = null
+	ourmob.mob_belly_transfer(src)
+
+	ourmob.Life(1)
+
+	if(ishuman(src))
+		for(var/obj/item/W in src)
+			if(istype(W, /obj/item/implant/backup) || istype(W, /obj/item/nif))
+				continue
+			src.drop_from_inventory(W)
+
+	qdel(src)
 
 //Hanner variant
 
@@ -567,41 +553,51 @@
 	var/energy_cost = 100
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
-	var/list/beast_options = list("Rabbit" = /mob/living/simple_mob/vore/rabbit,
-									"Red Panda" = /mob/living/simple_mob/vore/redpanda,
-									"Fennec" = /mob/living/simple_mob/vore/fennec,
+	var/list/beast_options = list("Armadillo" = /mob/living/simple_mob/animal/passive/armadillo,
+									"Azure Tit" = /mob/living/simple_mob/animal/passive/bird/azure_tit/beastmode,
+									"Bear" = /mob/living/simple_mob/animal/space/bear/brown/beastmode,
+									"Cat" = /mob/living/simple_mob/animal/passive/cat/black/beastmode,
+									"Chicken" = /mob/living/simple_mob/animal/passive/chicken,
+									"Cow" = /mob/living/simple_mob/animal/passive/cow,
+									"Dire Wolf" = /mob/living/simple_mob/vore/wolf/direwolf,
+									"Dog (Corgi)" = /mob/living/simple_mob/animal/passive/dog/corgi,
+									"Dog (Bull Terrier)" = /mob/living/simple_mob/animal/passive/dog/bullterrier,
+									"Dog (Tamaskan)" = /mob/living/simple_mob/animal/passive/dog/tamaskan,
+									"Duck" = /mob/living/simple_mob/animal/sif/duck,
+									"Fox" = /mob/living/simple_mob/animal/passive/fox/beastmode,
+									"Fox (Fennec)" = /mob/living/simple_mob/vore/fennec,
+									"Giant Bat" = /mob/living/simple_mob/vore/bat,
 									"Giant Frog" = /mob/living/simple_mob/vore/aggressive/frog,
 									"Giant Rat" = /mob/living/simple_mob/vore/aggressive/rat,
-									"Wolf" = /mob/living/simple_mob/vore/wolf,
-									"Dire Wolf" = /mob/living/simple_mob/vore/wolf/direwolf,
-									"Fox" = /mob/living/simple_mob/animal/passive/fox/beastmode,
-									"Panther" = /mob/living/simple_mob/vore/aggressive/panther,
 									"Giant Snake" = /mob/living/simple_mob/vore/aggressive/giant_snake,
-									"Otie" = /mob/living/simple_mob/vore/otie,
-									"Squirrel" = /mob/living/simple_mob/vore/squirrel,
-									"Raptor" = /mob/living/simple_mob/vore/raptor,
-									"Giant Bat" = /mob/living/simple_mob/vore/bat,
+									"Goat" = /mob/living/simple_mob/animal/goat,
+									"Goose" = /mob/living/simple_mob/animal/space/goose,
 									"Horse" = /mob/living/simple_mob/vore/horse,
 									"Horse (Big)" = /mob/living/simple_mob/vore/horse/big,
+									"Hyena" = /mob/living/simple_mob/animal/hyena,
 									"Kelpie" = /mob/living/simple_mob/vore/horse/kelpie,
-									"Bear" = /mob/living/simple_mob/animal/space/bear/brown/beastmode,
+									"Lion" = /mob/living/simple_mob/vore/retaliate/lion,
+									"Lizard" = /mob/living/simple_mob/animal/passive/lizard,
+									"Mouse" = /mob/living/simple_mob/animal/passive/mouse/beastmode,
+									"Otie" = /mob/living/simple_mob/vore/otie,
+									"Panther" = /mob/living/simple_mob/vore/aggressive/panther,
+									"Penguin" = /mob/living/simple_mob/animal/passive/penguin,
+									"Possum" = /mob/living/simple_mob/animal/passive/opossum/beastmode,
+									"Rabbit" = /mob/living/simple_mob/vore/rabbit,
+									"Raccoon" = /mob/living/simple_mob/animal/passive/raccoon,
+									"Raptor" = /mob/living/simple_mob/vore/raptor,
+									"Red Panda" = /mob/living/simple_mob/vore/redpanda,
+									"Reindeer" = /mob/living/simple_mob/vore/reindeer,
+									"Robin" = /mob/living/simple_mob/animal/passive/bird/european_robin/beastmode,
 									"Seagull" = /mob/living/simple_mob/vore/seagull,
 									"Sheep" = /mob/living/simple_mob/vore/sheep,
-									"Azure Tit" = /mob/living/simple_mob/animal/passive/bird/azure_tit/beastmode,
-									"Robin" = /mob/living/simple_mob/animal/passive/bird/european_robin/beastmode,
-									"Cat" = /mob/living/simple_mob/animal/passive/cat/black/beastmode,
-									"Tamaskan Dog" = /mob/living/simple_mob/animal/passive/dog/tamaskan,
-									"Corgi" = /mob/living/simple_mob/animal/passive/dog/corgi,
-									"Bull Terrier" = /mob/living/simple_mob/animal/passive/dog/bullterrier,
-									"Duck" = /mob/living/simple_mob/animal/sif/duck,
-									"Cow" = /mob/living/simple_mob/animal/passive/cow,
-									"Chicken" = /mob/living/simple_mob/animal/passive/chicken,
-									"Goat" = /mob/living/simple_mob/animal/goat,
-									"Penguin" = /mob/living/simple_mob/animal/passive/penguin,
-									"Goose" = /mob/living/simple_mob/animal/space/goose
+									"Slug" = /mob/living/simple_mob/vore/slug,
+									"Squirrel" = /mob/living/simple_mob/vore/squirrel,
+									"Wolf" = /mob/living/simple_mob/vore/wolf,
+									"Unicorn" = /mob/living/simple_mob/vore/horse/unicorn/beastmode
 									)
 
 	var/chosen_beast = tgui_input_list(src, "Which form would you like to take?", "Choose Beast Form", beast_options)
@@ -610,28 +606,24 @@
 		return
 
 	if(species.lleill_energy < energy_cost)
-		to_chat(src, "<span class='warning'>You do not have enough energy to do that! You currently have [species.lleill_energy] energy.</span>")
+		to_chat(src, span_warning("You do not have enough energy to do that! You currently have [species.lleill_energy] energy."))
 		return
 
 	var/mob/living/M = src
-	log_debug("polymorph start")
 	if(!istype(M))
-		log_debug("polymorph istype")
 		return
 
 	if(M.stat)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph stat")
-		to_chat(src, "<span class='warning'>You can't do that in your condition.</span>")
+		to_chat(src, span_warning("You can't do that in your condition."))
 		return
 
 	if(M.health <= 10)	//We can let it undo the TF, because the person will be dead, but otherwise things get weird.
-		log_debug("polymorph injured")
-		to_chat(src, "<span class='warning'>You are too injured to transform into a beast.</span>")
+		to_chat(src, span_warning("You are too injured to transform into a beast."))
 		return
 
-	visible_message("<b>\The [src]</b> begins significantly shifting their form.")
-	if(!do_after(src, 10 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
-		visible_message("<b>\The [src]</b> ceases shifting their form.")
+	visible_message(span_infoplain(span_bold("\The [src]") + " begins significantly shifting their form."))
+	if(!do_after(src, 10 SECONDS, target = src))
+		visible_message(span_infoplain(span_bold("\The [src]") + " ceases shifting their form."))
 		return 0
 
 	var/image/coolanimation = image('icons/obj/glamour.dmi', null, "animation")
@@ -640,62 +632,13 @@
 	spawn(10)
 		src.overlays -= coolanimation
 
-		log_debug("polymorph not dead")
 		var/mob/living/simple_mob/new_mob = spawn_beast_mob(beast_options[chosen_beast])
 		new_mob.faction = M.faction
 
 		if(new_mob && isliving(new_mob))
 			species.lleill_energy -= energy_cost
-			log_debug("polymorph new_mob")
-			for(var/obj/belly/B as anything in new_mob.vore_organs)
-				log_debug("polymorph new_mob belly")
-				new_mob.vore_organs -= B
-				qdel(B)
-			new_mob.vore_organs = list()
-			new_mob.name = M.name
-			new_mob.real_name = M.real_name
-			new_mob.verbs |= /mob/living/proc/revert_beast_form
-			new_mob.verbs |= /mob/living/proc/set_size
-			new_mob.hasthermals = 0
-			new_mob.health = M.health
-			new_mob.maxHealth = M.health
-			for(var/lang in M.languages)
-				new_mob.languages |= lang
-			M.copy_vore_prefs_to_mob(new_mob)
-			new_mob.vore_selected = M.vore_selected
-			if(ishuman(M))
-				log_debug("polymorph ishuman part2")
-				var/mob/living/carbon/human/H = M
-				if(ishuman(new_mob))
-					log_debug("polymorph ishuman(newmob)")
-					var/mob/living/carbon/human/N = new_mob
-					N.gender = H.gender
-					N.identifying_gender = H.identifying_gender
-				else
-					log_debug("polymorph gender else")
-					new_mob.gender = H.gender
-			else
-				log_debug("polymorph gender else 2")
-				new_mob.gender = M.gender
-				if(ishuman(new_mob))
-					var/mob/living/carbon/human/N = new_mob
-					N.identifying_gender = M.gender
-
-			for(var/obj/belly/B as anything in M.vore_organs)
-				B.loc = new_mob
-				B.forceMove(new_mob)
-				B.owner = new_mob
-				M.vore_organs -= B
-				new_mob.vore_organs += B
-
-			new_mob.ckey = M.ckey
-			if(M.ai_holder && new_mob.ai_holder)
-				var/datum/ai_holder/old_AI = M.ai_holder
-				old_AI.set_stance(STANCE_SLEEP)
-				var/datum/ai_holder/new_AI = new_mob.ai_holder
-				new_AI.hostile = old_AI.hostile
-				new_AI.retaliate = old_AI.retaliate
-			M.loc = new_mob
-			M.forceMove(new_mob)
-			new_mob.tf_mob_holder = M
-			new_mob.visible_message("<b>\The [src]</b> has transformed into \the [chosen_beast]!")
+			add_verb(new_mob, /mob/living/proc/revert_beast_form)
+			add_verb(new_mob, /mob/living/proc/set_size)
+			add_verb(new_mob, /mob/living/simple_mob/proc/ColorMate)
+			transfer_mob_identity(new_mob)
+			new_mob.visible_message(span_infoplain(span_bold("\The [src]") + " has transformed into \the [chosen_beast]!"))

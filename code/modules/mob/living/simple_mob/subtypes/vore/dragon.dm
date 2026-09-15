@@ -17,7 +17,7 @@
 	melee_damage_upper = 30
 
 	meat_amount = 15
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat
+	meat_type = /obj/item/reagent_containers/food/snacks/meat
 
 	//Space dragons aren't affected by atmos.
 	min_oxy = 0
@@ -50,13 +50,15 @@
 	ai_holder_type = /datum/ai_holder/simple_mob/melee
 	say_list_type = /datum/say_list/dragonboss
 
-/mob/living/simple_mob/vore/aggressive/dragon/Process_Spacemove(var/check_drift = 0)
+	can_be_drop_prey = FALSE
+
+/mob/living/simple_mob/vore/aggressive/dragon/Process_Spacemove(check_drift = 0)
 	return 1	//No drifting in space for space dragons!
 /*
 /mob/living/simple_mob/vore/aggressive/dragon/FindTarget()
 	. = ..()
 	if(.)
-		custom_emote(1,"snaps at [.]")
+		customautomatic_custom_emote_emote(1,"snaps at [.]")
 */
 // Activate Noms!
 /mob/living/simple_mob/vore/aggressive/dragon
@@ -105,8 +107,8 @@
 	. = ..()
 	if(!riding_datum)
 		riding_datum = new /datum/riding/simple_mob(src)
-	verbs |= /mob/living/simple_mob/proc/animal_mount
-	verbs |= /mob/living/proc/toggle_rider_reins
+	add_verb(src, /mob/living/simple_mob/proc/animal_mount)
+	add_verb(src, /mob/living/proc/toggle_rider_reins)
 	movement_cooldown = 0
 
 /mob/living/simple_mob/vore/aggressive/dragon/MouseDrop_T(mob/living/M, mob/living/user)
@@ -128,3 +130,27 @@
 	mount_offset_x = -9
 	has_eye_glow = TRUE
 	vore_eyes = TRUE
+
+// A fluff sprite for an event mob created by grayscaledrake
+
+/mob/living/simple_mob/vore/aggressive/dragon/gray_scaled
+	name = "gray scaled drake"
+	desc = "This is a big, scaly drake."
+
+	icon_dead = "drake_dead"
+	icon_living = "drake"
+	icon_state = "drake"
+	icon_rest = "drake_rest"
+	icon = 'icons/mob/vore_grayscale_drake.dmi'
+	vis_height = 115
+
+	old_x = -57
+	old_y = 0
+	default_pixel_x = -57
+	pixel_x = -57
+	pixel_y = 0
+
+	vore_active = 1
+	vore_capacity = 1
+	vore_pounce_chance = 0 // Beat them into crit before eating.
+	vore_icons = SA_ICON_LIVING

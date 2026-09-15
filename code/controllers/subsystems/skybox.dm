@@ -2,8 +2,7 @@
 //Exists to handle a few global variables that change enough to justify this. Technically a parallax, but it exhibits a skybox effect.
 SUBSYSTEM_DEF(skybox)
 	name = "Space skybox"
-	init_order = INIT_ORDER_SKYBOX
-	flags = SS_NO_FIRE
+	flags = SS_NO_FIRE | SS_NO_INIT
 	var/static/list/skybox_cache = list()
 
 	var/static/mutable_appearance/normal_space
@@ -28,7 +27,7 @@ SUBSYSTEM_DEF(skybox)
 	normal_space.layer = TURF_LAYER
 	normal_space.icon = 'icons/turf/space.dmi'
 	normal_space.icon_state = "white"
-	
+
 	//Static
 	for (var/i in 0 to 25)
 		var/mutable_appearance/MA = new(normal_space)
@@ -36,12 +35,12 @@ SUBSYSTEM_DEF(skybox)
 		im.plane = DUST_PLANE
 		im.alpha = 128 //80
 		im.blend_mode = BLEND_ADD
-		
+
 		MA.cut_overlays()
 		MA.add_overlay(im)
 
 		dust_cache["[i]"] = MA
-	
+
 	//Moving
 	for (var/i in 0 to 14)
 		// NORTH/SOUTH
@@ -57,14 +56,14 @@ SUBSYSTEM_DEF(skybox)
 		im = image('icons/turf/space_dust_transit.dmi', "speedspace_ew_[i]")
 		im.plane = DUST_PLANE
 		im.blend_mode = BLEND_ADD
-		
+
 		MA.cut_overlays()
 		MA.add_overlay(im)
-		
+
 		speedspace_cache["EW_[i]"] = MA
-	
+
 	//Over-the-edge images
-	for (var/dir in alldirs)
+	for (var/dir in ALL_POSSIBLE_DIRS)
 		var/mutable_appearance/MA = new(normal_space)
 		var/matrix/M = matrix()
 		var/horizontal = (dir & (WEST|EAST))
@@ -89,21 +88,18 @@ SUBSYSTEM_DEF(skybox)
 
 	. = ..()
 
-/datum/controller/subsystem/skybox/Initialize()
-	. = ..()
-
 /datum/controller/subsystem/skybox/proc/get_skybox(z)
-	if(!subsystem_initialized)
+	if(!initialized)
 		return // WAIT
 	if(!skybox_cache["[z]"])
 		skybox_cache["[z]"] = generate_skybox(z)
 	return skybox_cache["[z]"]
 
 /datum/controller/subsystem/skybox/proc/generate_skybox(z)
-	var/datum/skybox_settings/settings = global.using_map.get_skybox_datum(z)
-	
+	var/datum/skybox_settings/settings = using_map.get_skybox_datum(z)
+
 	var/new_overlays = list()
-	
+
 	var/image/res = image(settings.icon)
 	res.appearance_flags = KEEP_TOGETHER
 
@@ -117,7 +113,7 @@ SUBSYSTEM_DEF(skybox)
 
 	new_overlays += base
 
-	if(global.using_map.use_overmap && settings.use_overmap_details)
+	if(using_map.use_overmap && settings.use_overmap_details)
 		var/obj/effect/overmap/visitable/O = get_overmap_sector(z)
 		if(istype(O))
 			var/image/self_image = O.generate_skybox(z)
@@ -136,7 +132,7 @@ SUBSYSTEM_DEF(skybox)
 	for(var/datum/event/E in SSevents.active_events)
 		if(E.has_skybox_image && E.isRunning && (z in E.affecting_z))
 			new_overlays += E.get_skybox_image()
-	
+
 	for(var/image/I in new_overlays)
 		I.appearance_flags |= RESET_COLOR
 
@@ -144,7 +140,7 @@ SUBSYSTEM_DEF(skybox)
 
 	return res
 
-/datum/controller/subsystem/skybox/proc/rebuild_skyboxes(var/list/zlevels)
+/datum/controller/subsystem/skybox/proc/rebuild_skyboxes(list/zlevels)
 	for(var/z in zlevels)
 		skybox_cache["[z]"] = generate_skybox(z)
 
@@ -161,7 +157,7 @@ SUBSYSTEM_DEF(skybox)
 	var/icon_state = "dyable"
 	var/color
 	var/random_color = FALSE
-	
+
 	var/use_stars = TRUE
 	var/star_icon = 'icons/skybox/skybox.dmi'
 	var/star_state = "stars"

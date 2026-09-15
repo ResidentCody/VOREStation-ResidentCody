@@ -22,7 +22,7 @@
 	else if(heard_words.len >= 1 && world.time > last_talk_time + talk_interval && prob(talk_chance))
 		SaySomething()
 
-/datum/talking_atom/proc/catchMessage(var/msg, var/mob/source)
+/datum/talking_atom/proc/catchMessage(msg, mob/source)
 	if(!holder_atom)
 		return
 
@@ -60,7 +60,7 @@
 		spawn(2)
 			SaySomething(pick(seperate))
 
-/*/obj/item/weapon/talkingcrystal/proc/debug()
+/*/obj/item/talkingcrystal/proc/debug()
 	//set src in view()
 	for(var/v in heard_words)
 		to_world("[uppertext(v)]")
@@ -68,7 +68,7 @@
 		for(var/X in d)
 			to_world("[X]")*/
 
-/datum/talking_atom/proc/SaySomething(var/word = null)
+/datum/talking_atom/proc/SaySomething(word = null)
 	if(!holder_atom)
 		return
 
@@ -111,5 +111,5 @@
 	var/list/listening = viewers(holder_atom)
 
 	for(var/mob/M in listening)
-		to_chat(M, "[icon2html(holder_atom,M.client)] <b>[holder_atom]</b> reverberates, \"[span_blue(msg)]\"")
+		to_chat(M, "[icon2html(holder_atom,M.client)] " + span_bold("[holder_atom] reverberates") +" , \"[span_blue(msg)]\"")
 	last_talk_time = world.time

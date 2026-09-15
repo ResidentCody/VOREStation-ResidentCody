@@ -1,7 +1,5 @@
-import { toFixed } from 'common/math';
-import { BooleanLike } from 'common/react';
-
-import { useBackend } from '../backend';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
   Box,
   Button,
@@ -9,8 +7,8 @@ import {
   NoticeBox,
   ProgressBar,
   Section,
-} from '../components';
-import { Window } from '../layouts';
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 type Data = {
   fuel_stored: number;
@@ -112,7 +110,7 @@ export const PortableGenerator = (props) => {
                 maxValue={temperature_max + 30}
                 color={temperature_overheat ? 'bad' : 'good'}
               >
-                {toFixed(temperature_current)}&deg;C
+                {temperature_current.toFixed()}&deg;C
               </ProgressBar>
             </LabeledList.Item>
           </LabeledList>

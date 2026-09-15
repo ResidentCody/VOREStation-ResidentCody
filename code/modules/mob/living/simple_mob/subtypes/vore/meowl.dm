@@ -38,13 +38,13 @@
 	vore_pounce_maxhealth = 1000
 	vore_bump_emote = "pounces on"
 
-/mob/living/simple_mob/vore/meowl/init_vore()
-	..()
+/mob/living/simple_mob/vore/meowl/load_default_bellies()
+	. = ..()
 	var/obj/belly/B = vore_selected
 	B.name = "stomach"
 	B.desc = "The strange critter suddenly takes advantage of you being alone to pounce atop you and quickly engulf your head within its maw! Before you even have a chance to react, the world goes dark with the inside of the meowls mouth covering your face, a rough tounge lapping smearing wet hot slobber over you. The rest of the process is pretty quick as the cat-owl begins to gulp your head down through a surprisingly stretchy throat and along the tight, flexing tunnel of its gullet. Before long you are pushing face first into the creature's stomach, the wrinkled walls quickly beginning grind slick flesh across it like any other piece of food. The rest of your body soon follows into the increasingly tight space, forced to curl up over yourself as the stomach lining bears down on you from every angle. At first, the stomach itself seems rather inactive, happily just squeezing and massaging you as the meowl settles down to slowly enjoy their snack. Though, struggling might risk setting off the gut one way or another..."
 	B.mode_flags = DM_FLAG_THICKBELLY
-	B.belly_fullscreen = "yet_another_tumby"
+	B.belly_fullscreen = "VBO_fleshs"
 	B.digest_brute = 1
 	B.digest_burn = 1
 	B.digest_oxy = 1
@@ -62,7 +62,7 @@
 	chub.desc = "Your body quickly begins to feel very... different? In fact, you can't really feel your body much at all any more, but you certainly still feel something. The pressure of the gut that was practically crushing you before is relieved, but somehow still present as though you were now on the other side of the interaction. Your being feels much more spread out and practically intertwined with the world around, that world being the meowl itself. The strange cat-owl's purring feels like it's reverberating throughout your entire form, whatever that might be. Every time the critter shakes to ruffle its feathers, you feel yourself shake with it. Even the creatures emotions feel tangible to you, as though you share themselves, and mostly they are ones of fullness and content."
 	chub.digest_mode = DM_HOLD // like, its got you already, doesn't need to get you more
 	chub.mode_flags = DM_FLAG_FORCEPSAY
-	chub.escapable = TRUE // good luck
+	chub.escapable = B_ESCAPABLE_DEFAULT // good luck
 	chub.escapechance = 40 // high chance of STARTING a successful escape attempt
 	chub.escapechance_absorbed = 5 // m i n e
 	chub.vore_verb = "soak"
@@ -100,24 +100,24 @@
 		"Unfortunately, %pred seems to have absolutely no intention of letting you go, and your futile effort goes nowhere.",
 		"Strain as you might, you can't keep up the effort long enough before you sink back into %pred's %belly.")
 
-/mob/living/simple_mob/vore/meowl/attackby(var/obj/item/O as obj, var/mob/user as mob)
-	if(istype(O, /obj/item/weapon/reagent_containers/food))
+/mob/living/simple_mob/vore/meowl/attackby(obj/item/O as obj, mob/user as mob)
+	if(istype(O, /obj/item/reagent_containers/food))
 		if(health <= 0)
 			return
-		user.visible_message("<span class='notice'>\The [src] happily gulps down \the [O] right out of \the [user]'s hand, it seems pretty content now.</span>","<span class='notice'>\The [src] happily gulps down \the [O] right out of your hand, it seems pretty content now.</span>")
+		user.visible_message(span_notice("\The [src] happily gulps down \the [O] right out of \the [user]'s hand, it seems pretty content now."),span_notice("\The [src] happily gulps down \the [O] right out of your hand, it seems pretty content now."))
 		user.drop_from_inventory(O)
 		qdel(O)
 		well_fed = world.time
 		return
 	return ..()
 
-/mob/living/simple_mob/vore/meowl/PounceTarget(var/mob/living/M, var/successrate = 100)
+/mob/living/simple_mob/vore/meowl/PounceTarget(mob/living/M, successrate = 100)
 	vore_pounce_cooldown = world.time + 1 SECONDS // don't attempt another pounce for a while
 	if(prob(max(successrate,33))) // pounce success!
 		M.Weaken(5)
-		M.visible_message("<span class='danger'>\The [src] pounces on \the [M]!</span>!")
+		M.visible_message(span_danger("\The [src] pounces on \the [M]!"))
 	else // pounce misses!
-		M.visible_message("<span class='danger'>\The [src] attempts to pounce \the [M] but misses!</span>!")
+		M.visible_message(span_danger("\The [src] attempts to pounce \the [M] but misses!"))
 		playsound(src, 'sound/weapons/punchmiss.ogg', 25, 1, -1)
 
 	if(will_eat(M) && (!M.canmove || vore_standing_too)) //if they're edible then eat them too
@@ -137,6 +137,8 @@
 
 /datum/ai_holder/simple_mob/vore/meowl
 	var/last_friend_time = 0
+	violent_breakthrough = FALSE
+	destructive = FALSE
 
 /datum/ai_holder/simple_mob/vore/meowl/engage_target()
 	ai_log("engage_target() : Entering.", AI_LOG_DEBUG)
@@ -154,29 +156,30 @@
 	last_conflict_time = world.time
 
 	// Check if there is more than one person nearby and if they allow eating them
-	if(!check_attacker(target)) //Only act friendly if you haven't been attacked yet
-		var/list/crowd = list_targets()
+	if(target)
+		if(!check_attacker(target)) //Only act friendly if you haven't been attacked yet
+			var/list/crowd = list_targets()
 
-		var/mob/living/L = target
-		if(istype(L))
-			if(!L.allowmobvore && vore_hostile && distance <= 8)
+			var/mob/living/L = target
+			if(istype(L))
+				if(!L.allowmobvore && vore_hostile && distance <= 8)
+					play_friend(target)
+					set_stance(STANCE_APPROACH)
+					return
+
+			if(crowd.len > 1 && distance <= 8)
 				play_friend(target)
 				set_stance(STANCE_APPROACH)
 				return
 
-		if(crowd.len > 1 && distance <= 8)
-			play_friend(target)
-			set_stance(STANCE_APPROACH)
-			return
+		// Don't attack if you're well fed!
 
-	// Don't attack if you're well fed!
+			var/mob/living/simple_mob/vore/meowl/M = holder
 
-		var/mob/living/simple_mob/vore/meowl/M = holder
-
-		if(istype(M))
-			if(M.well_fed + 10 MINUTES > world.time)
-				set_stance(STANCE_APPROACH)
-				return
+			if(istype(M))
+				if(M.well_fed + 10 MINUTES > world.time)
+					set_stance(STANCE_APPROACH)
+					return
 
 
 	// Do a 'special' attack, if one is allowed.
@@ -204,7 +207,7 @@
 		on_engagement(target)
 		if(firing_lanes && !test_projectile_safety(target))
 			// Nudge them a bit, maybe they can shoot next time.
-			var/turf/T = get_step(holder, pick(cardinal))
+			var/turf/T = get_step(holder, pick(GLOB.cardinal))
 			if(T)
 				holder.IMove(T) // IMove() will respect movement cooldown.
 				holder.face_atom(target)
@@ -253,8 +256,8 @@
 	var/distance = get_dist(holder, target)
 	if(distance <= 1)
 		var/talkies = pick(friend_text_close)
-		holder.visible_message("<b>\The [holder]</b> [talkies]")
+		holder.visible_message(span_infoplain(span_bold("\The [holder]") + " [talkies]"))
 	else
 		var/talkies = pick(friend_text_far)
-		holder.visible_message("<b>\The [holder]</b> [talkies]")
+		holder.visible_message(span_infoplain(span_bold("\The [holder]") + " [talkies]"))
 	last_friend_time = world.time

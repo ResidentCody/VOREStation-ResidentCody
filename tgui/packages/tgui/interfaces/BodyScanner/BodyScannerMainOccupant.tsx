@@ -1,15 +1,15 @@
-import { toFixed } from 'common/math';
-
-import { useBackend } from '../../backend';
+import { useBackend } from 'tgui/backend';
 import {
   AnimatedNumber,
   Button,
   LabeledList,
   ProgressBar,
   Section,
-} from '../../components';
+  Stack,
+} from 'tgui-core/components';
+
 import { stats } from './constants';
-import { occupant } from './types';
+import type { occupant } from './types';
 
 export const BodyScannerMainOccupant = (props: { occupant: occupant }) => {
   const { act } = useBackend();
@@ -18,18 +18,23 @@ export const BodyScannerMainOccupant = (props: { occupant: occupant }) => {
     <Section
       title="Occupant"
       buttons={
-        <>
-          <Button icon="user-slash" onClick={() => act('ejectify')}>
-            Eject
-          </Button>
-          <Button icon="print" onClick={() => act('print_p')}>
-            Print Report
-          </Button>
-        </>
+        <Stack>
+          <Stack.Item>
+            <Button icon="user-slash" onClick={() => act('ejectify')}>
+              Eject
+            </Button>
+          </Stack.Item>
+          <Stack.Item>
+            <Button icon="print" onClick={() => act('print_p')}>
+              Print Report
+            </Button>
+          </Stack.Item>
+        </Stack>
       }
     >
       <LabeledList>
         <LabeledList.Item label="Name">{occupant.name}</LabeledList.Item>
+        <LabeledList.Item label="Species">{occupant.species}</LabeledList.Item>
         <LabeledList.Item label="Health">
           <ProgressBar
             minValue={0}
@@ -48,32 +53,30 @@ export const BodyScannerMainOccupant = (props: { occupant: occupant }) => {
         <LabeledList.Item label="Temperature">
           <AnimatedNumber
             value={occupant.bodyTempC}
-            format={(value) => toFixed(value)}
+            format={(value) => value.toFixed()}
           />
           &deg;C,&nbsp;
           <AnimatedNumber
             value={occupant.bodyTempF}
-            format={(value) => toFixed(value)}
+            format={(value) => value.toFixed()}
           />
           &deg;F
         </LabeledList.Item>
         <LabeledList.Item label="Blood Volume">
           <AnimatedNumber
             value={occupant.blood.volume}
-            format={(value) => toFixed(value)}
+            format={(value) => value.toFixed()}
           />
-          units&nbsp;(
+          u&nbsp;(
           <AnimatedNumber
             value={occupant.blood.percent}
-            format={(value) => toFixed(value)}
+            format={(value) => value.toFixed()}
           />
           %)
         </LabeledList.Item>
         <LabeledList.Item label="Weight">
-          {toFixed(occupant.weight) +
-            'lbs, ' +
-            toFixed(occupant.weight / 2.20463) +
-            'kgs'}
+          {`${(occupant.weight / 2.20463).toFixed(1)}kg, `}
+          {`${occupant.weight.toFixed()}lbs`}
         </LabeledList.Item>
       </LabeledList>
     </Section>

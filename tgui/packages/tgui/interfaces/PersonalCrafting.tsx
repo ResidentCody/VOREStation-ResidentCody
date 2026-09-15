@@ -1,17 +1,19 @@
-import { BooleanLike } from 'common/react';
 import { useState } from 'react';
-
-import { useBackend } from '../backend';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
   Button,
   Dimmer,
-  Flex,
   Icon,
+  Input,
   LabeledList,
   Section,
+  Stack,
   Tabs,
-} from '../components';
-import { Window } from '../layouts';
+} from 'tgui-core/components';
+import { flow } from 'tgui-core/fp';
+import type { BooleanLike } from 'tgui-core/react';
+import { createSearch } from 'tgui-core/string';
 
 type Data = {
   busy: BooleanLike;
@@ -20,10 +22,10 @@ type Data = {
   display_craftable_only: BooleanLike;
   display_compact: BooleanLike;
   craftability: Record<string, number>;
-  crafting_recipes: Record<string, recipe[]>;
+  crafting_recipes: Record<string, Recipe[]>;
 };
 
-type recipe = {
+type Recipe = {
   name: string;
   ref: string;
   req_text: string;
@@ -32,20 +34,16 @@ type recipe = {
   has_subcats: BooleanLike;
 };
 
-type uiRecipe = Required<recipe & { category: string }>;
+type UiCategory = { name: string; category: string; subcategory?: string };
+type UiRecipe = Required<Recipe & { category: string }>;
 
-export const PersonalCrafting = (props) => {
-  const { act, data } = useBackend<Data>();
-  const { busy, display_craftable_only, display_compact } = data;
-  const crafting_recipes = data.crafting_recipes || {};
-  // Sort everything into flat categories
-  const categories: { name: string; category: string; subcategory?: string }[] =
-    [];
-  const recipes: uiRecipe[] = [];
-  for (let category of Object.keys(crafting_recipes)) {
+function getUiEntries(crafting_recipes: Record<string, Recipe[]>) {
+  const categories: UiCategory[] = [];
+  const recipes: UiRecipe[] = [];
+  for (const category of Object.keys(crafting_recipes)) {
     const subcategories = crafting_recipes[category];
     if ('has_subcats' in subcategories) {
-      for (let subcategory of Object.keys(subcategories)) {
+      for (const subcategory of Object.keys(subcategories)) {
         if (subcategory === 'has_subcats') {
           continue;
         }
@@ -57,7 +55,7 @@ export const PersonalCrafting = (props) => {
         });
         // Push recipes
         const _recipes = subcategories[subcategory];
-        for (let recipe of _recipes) {
+        for (const recipe of _recipes) {
           recipes.push({
             ...recipe,
             category: subcategory,
@@ -73,16 +71,40 @@ export const PersonalCrafting = (props) => {
     });
     // Push recipes
     const _recipes = crafting_recipes[category];
-    for (let recipe of _recipes) {
+    for (const recipe of _recipes) {
       recipes.push({
         ...recipe,
         category,
       });
     }
   }
+  return { categories, recipes };
+}
+
+export const PersonalCrafting = (props) => {
+  const { act, data } = useBackend<Data>();
+  const [searchText, setSearchText] = useState<string>('');
+  const { busy, display_craftable_only, display_compact } = data;
+  const crafting_recipes = data.crafting_recipes || {};
+  // Sort everything into flat categories
+  const { categories, recipes } = getUiEntries(crafting_recipes);
   // Sort out the tab state
   const [tab, setTab] = useState(categories[0]?.name);
-  const shownRecipes = recipes.filter((recipe) => recipe.category === tab);
+
+  const testSearch = createSearch<Recipe>(searchText, (recipe) => recipe.name);
+
+  const shownRecipes: UiRecipe[] = flow([
+    (recipes: UiRecipe[]) =>
+      recipes.filter((recipe) => recipe.category === tab),
+    (recipes: UiRecipe[]) => {
+      if (!searchText) {
+        return recipes;
+      } else {
+        return recipes.filter(testSearch);
+      }
+    },
+  ])(recipes);
+
   return (
     <Window title="Crafting Menu" width={700} height={800}>
       <Window.Content scrollable>
@@ -95,28 +117,39 @@ export const PersonalCrafting = (props) => {
         <Section
           title="Personal Crafting"
           buttons={
-            <>
-              <Button.Checkbox
-                checked={display_compact}
-                onClick={() => act('toggle_compact')}
-              >
-                Compact
-              </Button.Checkbox>
-              <Button.Checkbox
-                checked={display_craftable_only}
-                onClick={() => act('toggle_recipes')}
-              >
-                Craftable Only
-              </Button.Checkbox>
-            </>
+            <Stack>
+              <Stack.Item>
+                <Button.Checkbox
+                  checked={display_compact}
+                  onClick={() => act('toggle_compact')}
+                >
+                  Compact
+                </Button.Checkbox>
+              </Stack.Item>
+              <Stack.Item>
+                <Button.Checkbox
+                  checked={display_craftable_only}
+                  onClick={() => act('toggle_recipes')}
+                >
+                  Craftable Only
+                </Button.Checkbox>
+              </Stack.Item>
+            </Stack>
           }
         >
-          <Flex>
-            <Flex.Item>
+          <Input
+            fluid
+            value={searchText}
+            mb={1}
+            placeholder="Search for recipes..."
+            onChange={(value: string) => setSearchText(value)}
+          />
+          <Stack>
+            <Stack.Item>
               <Tabs vertical>
-                {categories.map((category) => (
+                {categories.map((category, i) => (
                   <Tabs.Tab
-                    key={category.name}
+                    key={i}
                     selected={category.name === tab}
                     onClick={() => {
                       setTab(category.name);
@@ -130,22 +163,30 @@ export const PersonalCrafting = (props) => {
                   </Tabs.Tab>
                 ))}
               </Tabs>
-            </Flex.Item>
-            <Flex.Item grow={1} basis={0}>
-              <CraftingList craftables={shownRecipes} />
-            </Flex.Item>
-          </Flex>
+            </Stack.Item>
+            <Stack.Item grow basis={0}>
+              <CraftingList
+                craftables={shownRecipes}
+                display_compact={display_compact}
+                display_craftable_only={display_craftable_only}
+              />
+            </Stack.Item>
+          </Stack>
         </Section>
       </Window.Content>
     </Window>
   );
 };
 
-const CraftingList = (props: { craftables: uiRecipe[] }) => {
-  const { craftables = [] } = props;
+const CraftingList = (props: {
+  craftables: UiRecipe[];
+  display_compact: BooleanLike;
+  display_craftable_only: BooleanLike;
+}) => {
+  const { craftables = [], display_compact, display_craftable_only } = props;
   const { act, data } = useBackend<Data>();
-  const { craftability = {}, display_compact, display_craftable_only } = data;
-  return craftables.map((craftable) => {
+  const { craftability = {} } = data;
+  return craftables.map((craftable, i) => {
     if (display_craftable_only && !craftability[craftable.ref]) {
       return null;
     }
@@ -153,7 +194,7 @@ const CraftingList = (props: { craftables: uiRecipe[] }) => {
     if (display_compact) {
       return (
         <LabeledList.Item
-          key={craftable.name}
+          key={i}
           label={craftable.name}
           className="candystripe"
           buttons={
@@ -161,7 +202,7 @@ const CraftingList = (props: { craftables: uiRecipe[] }) => {
               icon="cog"
               disabled={!craftability[craftable.ref]}
               tooltip={
-                craftable.tool_text && 'Tools needed: ' + craftable.tool_text
+                craftable.tool_text && `Tools needed: ${craftable.tool_text}`
               }
               tooltipPosition="left"
               onClick={() =>
@@ -181,7 +222,8 @@ const CraftingList = (props: { craftables: uiRecipe[] }) => {
     // Full display
     return (
       <Section
-        key={craftable.name}
+        ml={0}
+        key={i}
         title={craftable.name}
         buttons={
           <Button

@@ -1,20 +1,19 @@
-import { sortBy } from 'common/collections';
-import { BooleanLike } from 'common/react';
-import { decodeHtmlEntities } from 'common/string';
-import { Fragment } from 'react';
-
-import { useBackend } from '../backend';
+import { Fragment, useState } from 'react';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
   Box,
   Button,
-  Flex,
   Input,
   LabeledList,
   Section,
+  Stack,
   Table,
   Tabs,
-} from '../components';
-import { Window } from '../layouts';
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
+import { decodeHtmlEntities } from 'tgui-core/string';
+
 import { CrewManifestContent } from './CrewManifest';
 
 type Data = {
@@ -142,8 +141,10 @@ export const IdentificationComputerAccessModification = (props: {
     departments,
   } = data;
 
+  const [tOwner, setTOwner] = useState(target_owner);
+
   return (
-    <Section title="Access Modification">
+    <Section title="Access Modification" scrollable fill height="92%">
       {!authenticated && (
         <Box italic mb={1}>
           Please insert the IDs into the terminal to proceed.
@@ -171,14 +172,15 @@ export const IdentificationComputerAccessModification = (props: {
                 <Input
                   value={target_owner!}
                   fluid
-                  onInput={(e, val) => act('reg', { reg: val })}
+                  onChange={setTOwner}
+                  onBlur={(val) => act('reg', { reg: val })}
                 />
               </LabeledList.Item>
               <LabeledList.Item label="Account Number">
                 <Input
-                  value={account_number!}
+                  value={account_number?.toString()}
                   fluid
-                  onInput={(e, val) => act('account', { account: val })}
+                  onBlur={(val) => act('account', { account: val })}
                 />
               </LabeledList.Item>
               <LabeledList.Item label="Dismissals">
@@ -187,12 +189,10 @@ export const IdentificationComputerAccessModification = (props: {
                   icon="exclamation-triangle"
                   confirmIcon="fire"
                   fluid
-                  confirmContent={
-                    'You are dismissing ' + target_owner + ', confirm?'
-                  }
+                  confirmContent={`You are dismissing ${target_owner}, confirm?`}
                   onClick={() => act('terminate')}
                 >
-                  {'Dismiss ' + target_owner}
+                  {`Dismiss ${tOwner}`}
                 </Button.Confirm>
               </LabeledList.Item>
             </LabeledList>
@@ -274,31 +274,38 @@ export const IdentificationComputerRegions = (props: { actName: string }) => {
 
   const { regions } = data;
 
+  if (regions) {
+    regions.sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const region of regions) {
+      region.accesses.sort((a, b) => a.desc.localeCompare(b.desc));
+    }
+  }
+
   return (
-    <Flex wrap="wrap" spacing={1}>
-      {regions &&
-        sortBy(regions, (r) => r.name).map((region) => (
-          <Flex.Item mb={1} basis="content" grow={1} key={region.name}>
-            <Section title={region.name} height="100%">
-              {sortBy(region.accesses, (a) => a.desc).map((access) => (
-                <Box key={access.ref}>
-                  <Button
-                    fluid
-                    selected={access.allowed}
-                    onClick={() =>
-                      act(actName, {
-                        access_target: access.ref,
-                        allowed: access.allowed,
-                      })
-                    }
-                  >
-                    {decodeHtmlEntities(access.desc)}
-                  </Button>
-                </Box>
-              ))}
-            </Section>
-          </Flex.Item>
-        ))}
-    </Flex>
+    <Stack wrap="wrap">
+      {regions?.map((region) => (
+        <Stack.Item mb={1} basis="content" grow key={region.name}>
+          <Section title={region.name} height="100%">
+            {region.accesses.map((access) => (
+              <Box key={access.ref}>
+                <Button
+                  fluid
+                  selected={access.allowed}
+                  onClick={() =>
+                    act(actName, {
+                      access_target: access.ref,
+                      allowed: access.allowed,
+                    })
+                  }
+                >
+                  {decodeHtmlEntities(access.desc)}
+                </Button>
+              </Box>
+            ))}
+          </Section>
+        </Stack.Item>
+      ))}
+    </Stack>
   );
 };

@@ -23,43 +23,43 @@
 
 /datum/gear/accessory/armband/colored/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/wallet
 	display_name = "wallet, orange"
-	path = /obj/item/weapon/storage/wallet/random
+	path = /obj/item/storage/wallet/random
 
 /datum/gear/accessory/wallet_poly
 	display_name = "wallet, polychromic"
-	path = /obj/item/weapon/storage/wallet/poly
+	path = /obj/item/storage/wallet/poly
 	cost = 0 //VOREStation Edit
 
 /datum/gear/accessory/wallet/womens
 	display_name = "wallet, womens"
-	path = /obj/item/weapon/storage/wallet/womens
+	path = /obj/item/storage/wallet/womens
 	cost = 0 //VOREStation Edit
 
 /datum/gear/accessory/wallet/womens/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/clutch
 	display_name = "clutch bag"
-	path = /obj/item/weapon/storage/briefcase/clutch
+	path = /obj/item/storage/briefcase/clutch
 	cost = 2
 
 /datum/gear/accessory/clutch/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/purse
 	display_name = "purse"
-	path = /obj/item/weapon/storage/backpack/purse
+	path = /obj/item/storage/backpack/purse
 	cost = 3
 
 /datum/gear/accessory/purse/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/wcoat
 	display_name = "waistcoat selection"
@@ -138,7 +138,7 @@
 
 /datum/gear/accessory/scarfcolor/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/jacket
 	display_name = "suit jacket selection"
@@ -185,12 +185,12 @@
 /datum/gear/accessory/fannypack
 	display_name = "fannypack selection"
 	cost = 2
-	path = /obj/item/weapon/storage/belt/fannypack
+	path = /obj/item/storage/belt/fannypack
 
 /datum/gear/accessory/fannypack/New()
 	..()
 	var/list/fannys = list()
-	for(var/obj/item/weapon/storage/belt/fannypack/fanny_type as anything in typesof(/obj/item/weapon/storage/belt/fannypack))
+	for(var/obj/item/storage/belt/fannypack/fanny_type as anything in typesof(/obj/item/storage/belt/fannypack))
 		fannys[initial(fanny_type.name)] = fanny_type
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(fannys))
 
@@ -222,7 +222,7 @@
 
 /datum/gear/accessory/virginkiller/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/bracelet/material
 	display_name = "bracelet selection"
@@ -270,7 +270,7 @@
 
 /datum/gear/accessory/sash/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/asym
 	display_name = "asymmetric jacket selection"
@@ -356,22 +356,22 @@
 
 /datum/gear/accessory/wristband/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/wristband_collection
 	display_name = "wristbands (selection)"
-	path = /obj/item/clothing/accessory/wristbandcollection
+	path = /obj/item/clothing/accessory/wristband/collection
 
 /datum/gear/accessory/wristband_collection/New()
 	..()
 	var/list/wristband_lists = list(
-	"Green, Blue and Yellow" = /obj/item/clothing/accessory/wristbandcollection,
-	"Pink, Black and Red" = /obj/item/clothing/accessory/wristbandcollection/pink,
-	"Red and Orange" = /obj/item/clothing/accessory/wristbandcollection/les,
-	"White, Pink and Blue" = /obj/item/clothing/accessory/wristbandcollection/trans,
-	"Blue, Purple and Pink" = /obj/item/clothing/accessory/wristbandcollection/bi,
-	"Black, White and Grey" = /obj/item/clothing/accessory/wristbandcollection/ace,
-	"Spiked" = /obj/item/clothing/accessory/wristband_spiked
+	"Green, Blue and Yellow" = /obj/item/clothing/accessory/wristband/collection,
+	"Pink, Black and Red" = /obj/item/clothing/accessory/wristband/collection/pink,
+	"Red and Orange" = /obj/item/clothing/accessory/wristband/collection/les,
+	"White, Pink and Blue" = /obj/item/clothing/accessory/wristband/collection/trans,
+	"Blue, Purple and Pink" = /obj/item/clothing/accessory/wristband/collection/bi,
+	"Black, White and Grey" = /obj/item/clothing/accessory/wristband/collection/ace,
+	"Spiked" = /obj/item/clothing/accessory/wristband/spiked
 	)
 	gear_tweaks += new/datum/gear_tweak/path(wristband_lists)
 
@@ -385,7 +385,7 @@
 
 /datum/gear/choker/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/collar
 	display_name = "collar, silver"
@@ -395,7 +395,7 @@
 
 /datum/gear/collar/New()
 	..()
-	gear_tweaks += gear_tweak_collar_tag
+	gear_tweaks += GLOB.gear_tweak_collar_tag
 
 /datum/gear/collar/golden
 	display_name = "collar, golden"
@@ -408,6 +408,10 @@
 /datum/gear/collar/shock
 	display_name = "collar, shock"
 	path = /obj/item/clothing/accessory/collar/shock
+
+/datum/gear/collar/bluespace
+	display_name = "collar, bluespace"
+	path = /obj/item/clothing/accessory/collar/shock/bluespace
 
 /datum/gear/collar/spike
 	display_name = "collar, spike"
@@ -435,7 +439,7 @@
 
 /datum/gear/accessory/khcrystal
 	display_name = "KH Life Crystal"
-	path = /obj/item/weapon/storage/box/khcrystal
+	path = /obj/item/storage/box/khcrystal
 	description = "A small necklace device that will notify an offsite cloning facility should you expire after activating it."
 
 /datum/gear/accessory/tronket
@@ -455,11 +459,11 @@
 
 /datum/gear/accessory/flops/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/accessory/dosimeter
 	display_name = "Dosimeter"
-	path = /obj/item/weapon/storage/box/dosimeter
+	path = /obj/item/storage/box/dosimeter
 	description = "A small device that will warn the bearer when they are exposed to dangerous levels of radiation."
 
 /*
@@ -554,3 +558,40 @@ Talon pin
 	"Service - Echelons" = /obj/item/clothing/accessory/solgov/department/service/army
 	)
 	gear_tweaks += new/datum/gear_tweak/path(insignia)
+
+/datum/gear/accessory/belt_selection
+	display_name = "belts (selection, colorable)"
+	path = /obj/item/clothing/accessory/belt
+
+/datum/gear/accessory/belt_selection/New()
+	..()
+	var/list/wristband_lists = list(
+	"Thin Belt" = /obj/item/clothing/accessory/belt,
+	"Thick Belt" = /obj/item/clothing/accessory/belt/thick,
+	"Strap Belt" = /obj/item/clothing/accessory/belt/strap,
+	"Studded Belt" = /obj/item/clothing/accessory/belt/studded
+	)
+	gear_tweaks += new/datum/gear_tweak/path(wristband_lists)
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/accessory/bunny_tail
+	display_name = "bunny tail, colorable"
+	path = /obj/item/clothing/accessory/bunny_tail
+
+/datum/gear/accessory/bunny_tail/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/accessory/legwarmer_selection
+	display_name = "legwarmers (selection, colorable)"
+	path = /obj/item/clothing/accessory/legwarmers
+
+/datum/gear/accessory/legwarmer_selection/New()
+	..()
+	var/list/legwarmer_lists = list(
+	"Legwarmers, thigh" = /obj/item/clothing/accessory/legwarmers,
+	"Legwarmers, medium" = /obj/item/clothing/accessory/legwarmersmedium,
+	"Legwarmers, short" = /obj/item/clothing/accessory/legwarmersshort
+	)
+	gear_tweaks += new/datum/gear_tweak/path(legwarmer_lists)
+	gear_tweaks += GLOB.gear_tweak_free_color_choice

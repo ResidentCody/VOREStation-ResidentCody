@@ -1,3 +1,6 @@
+/obj/item/clothing/suit/storage/teshari
+	name = DEVELOPER_WARNING_NAME
+
 // Standard Cloaks
 /obj/item/clothing/suit/storage/teshari/cloak
 	name = "black cloak"
@@ -130,7 +133,7 @@
 //Engineering
 
 /obj/item/clothing/suit/storage/teshari/cloak/jobs/ce
-	name = "cheif engineer cloak"
+	name = "chief engineer cloak"
 	desc = "A soft Teshari cloak made for the "+ JOB_CHIEF_ENGINEER
 	icon_state = "tesh_cloak_ce"
 
@@ -148,7 +151,7 @@
 
 /obj/item/clothing/suit/storage/teshari/cloak/jobs/cmo
 	name = "chief medical officer cloak"
-	desc = "A soft Teshari cloak made the Cheif Medical Officer"
+	desc = "A soft Teshari cloak made the Chief Medical Officer"
 	icon_state = "tesh_cloak_cmo"
 
 /obj/item/clothing/suit/storage/teshari/cloak/jobs/medical
@@ -228,7 +231,7 @@
 	name = "Teshari labcoat"
 	desc = "A small suit that protects against minor chemical spills. This one is a good fit on Teshari."
 	icon = 'icons/inventory/suit/item_teshari.dmi'
-	icon_state = "tesh_labcoat"
+	icon_state = "labcoat"
 	species_restricted = list(SPECIES_TESHARI)
 
 /obj/item/clothing/suit/storage/toggle/tesharicoat
@@ -236,7 +239,7 @@
 	desc = "A coat that seems too small to fit a human."
 	icon = 'icons/inventory/suit/item_teshari.dmi'
 	icon_state = "tesharicoat"
-	body_parts_covered = UPPER_TORSO|ARMS|LOWER_TORSO|LEGS
+	body_parts_covered = CHEST|ARMS|LEGS
 	species_restricted = list(SPECIES_TESHARI)
 
 /obj/item/clothing/suit/storage/toggle/tesharicoatwhite
@@ -244,7 +247,7 @@
 	desc = "A coat that seems too small to fit a human."
 	icon = 'icons/inventory/suit/item_teshari.dmi'
 	icon_state = "tesharicoatwhite"
-	body_parts_covered = UPPER_TORSO|ARMS|LOWER_TORSO|LEGS
+	body_parts_covered = CHEST|ARMS|LEGS
 	species_restricted = list(SPECIES_TESHARI)
 
 //Hooded teshari cloaks
@@ -254,11 +257,12 @@
 	icon = 'icons/inventory/suit/item_teshari.dmi'
 	icon_state = "tesh_hcloak_bo"
 	item_state_slots = list(slot_r_hand_str = "tesh_hcloak_bo", slot_l_hand_str = "tesh_hcloak_bo")
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO|ARMS
+	body_parts_covered = CHEST|ARMS
 	flags_inv = HIDEHOLSTER|HIDETIE
-	action_button_name = "Toggle Cloak Hood"
+	actions_types = list(/datum/action/item_action/toggle_hood)
 	hoodtype = /obj/item/clothing/head/tesh_hood
-	allowed = list (/obj/item/weapon/pen, /obj/item/weapon/paper, /obj/item/device/flashlight,/obj/item/weapon/tank/emergency/oxygen, /obj/item/weapon/storage/fancy/cigarettes, /obj/item/weapon/storage/box/matches, /obj/item/weapon/reagent_containers/food/drinks/flask)
+	allowed = list(POCKET_GENERIC, POCKET_EMERGENCY)
+	species_restricted = list(SPECIES_TESHARI)
 
 /obj/item/clothing/head/tesh_hood
 	name = "Cloak Hood"
@@ -270,6 +274,7 @@
 	item_state_slots = list(slot_r_hand_str = "tesh_hood_bo", slot_l_hand_str = "tesh_hood_bo")
 	flags_inv = BLOCKHAIR
 	body_parts_covered = HEAD
+	species_restricted = list(SPECIES_TESHARI)
 
 /obj/item/clothing/suit/storage/hooded/teshari/standard/black_orange
 	name = "black and orange hooded cloak"

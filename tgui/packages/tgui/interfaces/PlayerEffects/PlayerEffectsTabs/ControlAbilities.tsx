@@ -1,5 +1,5 @@
-import { useBackend } from '../../../backend';
-import { Button, Section } from '../../../components';
+import { useBackend } from 'tgui/backend';
+import { Button, Section } from 'tgui-core/components';
 
 export const ControlAbilities = (props) => {
   const { act } = useBackend();
@@ -44,6 +44,18 @@ export const ControlAbilities = (props) => {
       </Button>
       <Button fluid onClick={() => act('trash_eater')}>
         Give Trash Eater
+      </Button>
+      <Button fluid onClick={() => act('active_cloaking')}>
+        Give Active Cloaking
+      </Button>
+      <Button fluid onClick={() => act('colormater')}>
+        Give ColorMate to simplemob/borg
+      </Button>
+      <Button fluid onClick={() => act('be_event_invis')}>
+        Set Plane to Event Invisible
+      </Button>
+      <Button fluid onClick={() => act('see_event_invis')}>
+        Toggle Vision of Event Invisible
       </Button>
     </Section>
   );

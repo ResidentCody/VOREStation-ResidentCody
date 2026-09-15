@@ -1,13 +1,13 @@
-import { useBackend } from '../../backend';
-import { Box, Button, LabeledList, Section } from '../../components';
-import { modalOpen } from '../../interfaces/common/ComplexModal';
+import { useBackend } from 'tgui/backend';
+import { modalOpen } from 'tgui/interfaces/common/ComplexModal';
+import { Box, Button, LabeledList, Section } from 'tgui-core/components';
 import { doEdit } from '../GeneralRecords/functions';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const MedicalRecordsViewMedical = (props) => {
   const { act, data } = useBackend<Data>();
   const { medical } = data;
-  if (!medical || !medical.fields) {
+  if (!medical?.fields) {
     return (
       <Box color="bad">
         Medical records lost!
@@ -24,7 +24,20 @@ export const MedicalRecordsViewMedical = (props) => {
           <LabeledList.Item key={i} label={field.field}>
             <Box preserveWhitespace>
               {field.value}
-              <Button icon="pen" ml="0.5rem" onClick={() => doEdit(field)} />
+              {!!field.edit &&
+                (field.edit === 'notes' ? (
+                  <Button
+                    icon="pen"
+                    ml="1rem"
+                    onClick={() => act('edit_notes')}
+                  />
+                ) : (
+                  <Button
+                    icon="pen"
+                    ml="0.5rem"
+                    onClick={() => doEdit(field)}
+                  />
+                ))}
             </Box>
           </LabeledList.Item>
         ))}
@@ -33,8 +46,7 @@ export const MedicalRecordsViewMedical = (props) => {
         {medical.comments && medical.comments.length === 0 ? (
           <Box color="label">No comments found.</Box>
         ) : (
-          medical.comments &&
-          medical.comments.map((comment, i) => (
+          medical.comments?.map((comment, i) => (
             <Box key={i}>
               <Box color="label" inline>
                 {comment.header}

@@ -21,21 +21,27 @@
 	var/scan_id = 1
 	var/is_secure = 0
 	var/wrenchable = 0
-	var/datum/wires/smartfridge/wires = null
 	var/persistent = null // Path of persistence datum used to track contents
+	circuit = /obj/item/circuitboard/smartfridge //This one is meant to be uncraftable, however.
+
+	var/datum/looping_sound/fridge/soundloop
+	var/playing_sound = FALSE
 
 /obj/machinery/smartfridge/secure
 	is_secure = 1
 
-/obj/machinery/smartfridge/Initialize()
+/obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
 	if(persistent)
 		SSpersistence.track_value(src, persistent)
 	if(is_secure)
-		wires = new/datum/wires/smartfridge/secure(src)
+		set_wires(new /datum/wires/smartfridge/secure(src))
 	else
-		wires = new/datum/wires/smartfridge(src)
+		set_wires(new /datum/wires/smartfridge(src))
+
+	soundloop = new(list(src), FALSE)
 	update_icon()
+	default_apply_parts()
 
 /obj/machinery/smartfridge/Destroy()
 	qdel(wires)
@@ -44,14 +50,20 @@
 	wires = null
 	if(persistent)
 		SSpersistence.forget_value(src, persistent)
+	QDEL_NULL(soundloop)
 	return ..()
 
-/obj/machinery/smartfridge/proc/accept_check(var/obj/item/O as obj)
+/obj/machinery/smartfridge/proc/accept_check(obj/item/O)
 	return FALSE
 
 /obj/machinery/smartfridge/process()
 	if(stat & (BROKEN|NOPOWER))
+		soundloop.stop()
+		playing_sound = FALSE
 		return
+	if(!playing_sound && !stat)
+		soundloop.start()
+		playing_sound = TRUE
 	if(src.seconds_electrified > 0)
 		src.seconds_electrified--
 	if(src.shoot_inventory && prob(2))
@@ -62,6 +74,12 @@
 	..()
 	if(old_stat != stat)
 		update_icon()
+		if(stat & (NOPOWER | BROKEN))
+			soundloop.stop()
+			playing_sound = FALSE
+		else
+			soundloop.start()
+			playing_sound = TRUE
 
 /obj/machinery/smartfridge/update_icon()
 	cut_overlays()
@@ -95,10 +113,10 @@
 			if(6 to INFINITY)
 				add_overlay("[icon_base]-[icon_contents]3")
 
-/obj/machinery/smartfridge/attackby(var/obj/item/O as obj, var/mob/user as mob)
+/obj/machinery/smartfridge/attackby(obj/item/O, mob/user)
 	if(O.has_tool_quality(TOOL_SCREWDRIVER))
 		panel_open = !panel_open
-		user.visible_message("<span class='filter_notice'>[user] [panel_open ? "opens" : "closes"] the maintenance panel of \the [src].</span>", "<span class='filter_notice'>You [panel_open ? "open" : "close"] the maintenance panel of \the [src].</span>")
+		user.visible_message(span_filter_notice("[user] [panel_open ? "opens" : "closes"] the maintenance panel of \the [src]."), span_filter_notice("You [panel_open ? "open" : "close"] the maintenance panel of \the [src]."))
 		playsound(src, O.usesound, 50, 1)
 		update_icon()
 		return
@@ -106,23 +124,30 @@
 	if(wrenchable && default_unfasten_wrench(user, O, 20))
 		return
 
-	if(istype(O, /obj/item/device/multitool) || O.has_tool_quality(TOOL_WIRECUTTER))
+	if(O.has_tool_quality(TOOL_CROWBAR))
+		if(allowed(user))
+			default_deconstruction_crowbar(user, O)
+		else
+			to_chat(user, span_warning("\The [src] smartly denies you access to deconstruct it."))
+		return
+
+	if(istype(O, /obj/item/multitool) || O.has_tool_quality(TOOL_WIRECUTTER))
 		if(panel_open)
 			attack_hand(user)
 		return
 
 	if(stat & NOPOWER)
-		to_chat(user, "<span class='notice'>\The [src] is unpowered and useless.</span>")
+		to_chat(user, span_notice("\The [src] is unpowered and useless."))
 		return
 
 	if(accept_check(O))
 		user.remove_from_mob(O)
 		stock(O)
-		user.visible_message("<span class='notice'>[user] has added \the [O] to \the [src].</span>", "<span class='notice'>You add \the [O] to \the [src].</span>")
+		user.visible_message(span_notice("[user] has added \the [O] to \the [src]."), span_notice("You add \the [O] to \the [src]."))
 		sortTim(item_records, GLOBAL_PROC_REF(cmp_stored_item_name))
 
-	else if(istype(O, /obj/item/weapon/storage/bag))
-		var/obj/item/weapon/storage/bag/P = O
+	else if(istype(O, /obj/item/storage/bag))
+		var/obj/item/storage/bag/P = O
 		var/plants_loaded = 0
 		for(var/obj/G in P.contents)
 			if(accept_check(G))
@@ -130,32 +155,32 @@
 				stock(G)
 				plants_loaded = 1
 		if(plants_loaded)
-			user.visible_message("<span class='notice'>[user] loads \the [src] with \the [P].</span>", "<span class='notice'>You load \the [src] with \the [P].</span>")
+			user.visible_message(span_notice("[user] loads \the [src] with \the [P]."), span_notice("You load \the [src] with \the [P]."))
 			if(P.contents.len > 0)
-				to_chat(user, "<span class='notice'>Some items are refused.</span>")
+				to_chat(user, span_notice("Some items are refused."))
 
-	else if(istype(O, /obj/item/weapon/gripper)) // Grippers. ~Mechoid.
-		var/obj/item/weapon/gripper/B = O	//B, for Borg.
-		if(!B.wrapped)
-			to_chat(user, "<span class='filter_notice'>\The [B] is not holding anything.</span>")
-			return
+	else if(istype(O, /obj/item/gripper)) // Grippers. ~Mechoid.
+		var/obj/item/gripper/B = O	//B, for Borg.
+		var/obj/item/wrapped = B.get_wrapped_item()
+		if(!wrapped)
+			to_chat(user, span_filter_notice("\The [B] is not holding anything."))
+			return TRUE
 		else
-			var/B_held = B.wrapped
-			to_chat(user, "<span class='filter_notice'>You use \the [B] to put \the [B_held] into \the [src].</span>")
-		return
+			to_chat(user, span_filter_notice("You use \the [B] to put \the [wrapped] into \the [src]."))
+		return FALSE
 
 	else
-		to_chat(user, "<span class='notice'>\The [src] smartly refuses [O].</span>")
-		return 1
+		to_chat(user, span_notice("\The [src] smartly refuses [O]."))
+		return TRUE
 
-/obj/machinery/smartfridge/secure/emag_act(var/remaining_charges, var/mob/user)
+/obj/machinery/smartfridge/secure/emag_act(remaining_charges, mob/user)
 	if(!emagged)
 		emagged = 1
 		locked = -1
-		to_chat(user, "<span class='filter_notice'>You short out the product lock on [src].</span>")
-		return 1
+		to_chat(user, span_filter_notice("You short out the product lock on [src]."))
+		return TRUE
 
-/obj/machinery/smartfridge/proc/find_record(var/obj/item/O)
+/obj/machinery/smartfridge/proc/find_record(obj/item/O)
 	for(var/datum/stored_item/I as anything in item_records)
 		if((O.type == I.item_path) && (O.name == I.item_name))
 			return I
@@ -170,7 +195,7 @@
 	SStgui.update_uis(src)
 	update_icon()
 
-/obj/machinery/smartfridge/proc/vend(datum/stored_item/I, var/count)
+/obj/machinery/smartfridge/proc/vend(datum/stored_item/I, count)
 	var/amount = I.get_amount()
 	// Sanity check, there are probably ways to press the button when it shouldn't be possible.
 	if(amount <= 0)
@@ -205,27 +230,27 @@
 		var/datum/stored_item/I = item_records[i]
 		var/count = I.get_amount()
 		if(count > 0)
-			items.Add(list(list("name" = html_encode(capitalize(I.item_name)), "index" = i, "amount" = count)))
+			items.Add(list(list("name" = capitalize(I.item_name), "index" = i, "amount" = count)))
 
 	.["contents"] = items
 	.["name"] = name
 	.["locked"] = locked
 	.["secure"] = is_secure
 
-/obj/machinery/smartfridge/tgui_act(action, params)
+/obj/machinery/smartfridge/tgui_act(action, params, datum/tgui/ui)
 	if(..())
 		return TRUE
 
-	add_fingerprint(usr)
+	add_fingerprint(ui.user)
 	switch(action)
 		if("Release")
 			var/amount = 0
 			if(params["amount"])
 				amount = params["amount"]
 			else
-				amount = tgui_input_number(usr, "How many items?", "How many items would you like to take out?", 1)
+				amount = tgui_input_number(ui.user, "How many items?", "How many items would you like to take out?", 1)
 
-			if(QDELETED(src) || QDELETED(usr) || !usr.Adjacent(src))
+			if(QDELETED(src) || QDELETED(ui.user) || !ui.user.Adjacent(src))
 				return FALSE
 
 			var/index = text2num(params["index"])
@@ -253,7 +278,7 @@
 		return FALSE
 	spawn(0)
 		throw_item.throw_at(target,16,3,src)
-	src.visible_message("<span class='warning'>[src] launches [throw_item.name] at [target.name]!</span>")
+	src.visible_message(span_warning("[src] launches [throw_item.name] at [target.name]!"))
 	SStgui.update_uis(src)
 	update_icon()
 	return TRUE
@@ -261,11 +286,11 @@
 /*
  * Secure Smartfridges
  */
-/obj/machinery/smartfridge/secure/tgui_act(action, params)
+/obj/machinery/smartfridge/secure/tgui_act(action, params, datum/tgui/ui)
 	if(stat & (NOPOWER|BROKEN))
 		return TRUE
-	if(usr.contents.Find(src) || (in_range(src, usr) && istype(loc, /turf)))
-		if((!allowed(usr) && scan_id) && !emagged && locked != -1 && action == "Release")
-			to_chat(usr, "<span class='warning'>Access denied.</span>")
+	if(ui.user.contents.Find(src) || (in_range(src, ui.user) && istype(loc, /turf)))
+		if((!allowed(ui.user) && scan_id) && !emagged && locked != -1 && action == "Release")
+			to_chat(ui.user, span_warning("Access denied."))
 			return TRUE
 	return ..()

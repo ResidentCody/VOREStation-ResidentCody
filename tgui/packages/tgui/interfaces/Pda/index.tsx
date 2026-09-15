@@ -1,12 +1,20 @@
-import { BooleanLike } from 'common/react';
 import { useState } from 'react';
 import { useBackend } from 'tgui/backend';
-import { Box, Button, Flex, Icon, LabeledList, Section } from 'tgui/components';
 import { Window } from 'tgui/layouts';
+import { RoutingErrorWindow } from 'tgui/routes';
 /* This is all basically stolen from routes.js. */
-import { routingError } from 'tgui/routes';
+import {
+  Box,
+  Button,
+  Icon,
+  LabeledList,
+  Section,
+  Stack,
+} from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 type Data = {
+  theme?: string;
   owner: string;
   ownjob: string;
   idInserted: BooleanLike;
@@ -26,31 +34,37 @@ type Data = {
 
 const requirePdaInterface = require.context('./pda_screens', false, /\.tsx$/);
 
-function getPdaApp(name: string) {
+function getPdaApp(name: string): () => React.JSX.Element {
   let appModule: __WebpackModuleApi.RequireContext;
+
   try {
     appModule = requirePdaInterface(`./${name}.tsx`);
-  } catch (err) {
+  } catch (err: any) {
     if (err.code === 'MODULE_NOT_FOUND') {
-      return routingError('notFound', name);
+      return () => <RoutingErrorWindow type="notFound" name={name} />;
     }
     throw err;
   }
-  const Component: () => React.JSX.Element = appModule[name];
+
+  const Component = appModule[name] as (() => React.JSX.Element) | undefined;
+
   if (!Component) {
-    return routingError('missingExport', name);
+    return () => <RoutingErrorWindow type="missingExport" name={name} />;
   }
+
   return Component;
 }
 
 export const Pda = (props) => {
   const { data } = useBackend<Data>();
 
-  const { app, owner, useRetro } = data;
+  const { theme, app, owner, useRetro } = data;
+
+  const [settingsMode, setSettingsMode] = useState<BooleanLike>(false);
 
   if (!owner) {
     return (
-      <Window>
+      <Window theme={theme}>
         <Window.Content>
           <Section stretchContents>
             Warning: No ID information found! Please swipe ID!
@@ -60,20 +74,14 @@ export const Pda = (props) => {
     );
   }
 
-  let App = getPdaApp(app.template);
-
-  const [settingsMode, setSettingsMode] = useState<BooleanLike>(false);
-
-  function handleSettingsMode(value: BooleanLike) {
-    setSettingsMode(value);
-  }
+  const App = getPdaApp(app.template);
 
   return (
-    <Window width={580} height={670} theme={useRetro ? 'pda-retro' : undefined}>
+    <Window width={580} height={670} theme={useRetro ? 'pda_retro' : theme}>
       <Window.Content scrollable>
         <PDAHeader
           settingsMode={settingsMode}
-          onSettingsMode={handleSettingsMode}
+          onSettingsMode={setSettingsMode}
         />
         {(settingsMode && <PDASettings />) || (
           <Section
@@ -89,7 +97,7 @@ export const Pda = (props) => {
           </Section>
         )}
         <Box mb={8} />
-        <PDAFooter onSettingsMode={handleSettingsMode} />
+        <PDAFooter onSettingsMode={setSettingsMode} />
       </Window.Content>
     </Window>
   );
@@ -97,7 +105,7 @@ export const Pda = (props) => {
 
 const PDAHeader = (props: {
   settingsMode: BooleanLike;
-  onSettingsMode: Function;
+  onSettingsMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const { act, data } = useBackend<Data>();
 
@@ -105,9 +113,9 @@ const PDAHeader = (props: {
 
   return (
     <Box mb={1}>
-      <Flex align="center" justify="space-between">
+      <Stack align="center" justify="space-between">
         {!!idInserted && (
-          <Flex.Item>
+          <Stack.Item>
             <Button
               icon="eject"
               color="transparent"
@@ -115,20 +123,20 @@ const PDAHeader = (props: {
             >
               {idLink}
             </Button>
-          </Flex.Item>
+          </Stack.Item>
         )}
-        <Flex.Item grow={1} textAlign="center" bold>
+        <Stack.Item grow textAlign="center" bold>
           {stationTime}
-        </Flex.Item>
-        <Flex.Item>
+        </Stack.Item>
+        <Stack.Item>
           <Button
             selected={props.settingsMode}
             onClick={() => props.onSettingsMode(!props.settingsMode)}
             icon="cog"
           />
           <Button onClick={() => act('Retro')} icon="adjust" />
-        </Flex.Item>
-      </Flex>
+        </Stack.Item>
+      </Stack>
     </Box>
   );
 };
@@ -174,7 +182,9 @@ const PDASettings = (props) => {
   );
 };
 
-const PDAFooter = (props: { onSettingsMode: Function }) => {
+const PDAFooter = (props: {
+  onSettingsMode: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const { act, data } = useBackend<Data>();
 
   const { app, useRetro } = data;
@@ -187,8 +197,8 @@ const PDAFooter = (props: { onSettingsMode: Function }) => {
       right="0%"
       backgroundColor={useRetro ? '#6f7961' : '#1b1b1b'}
     >
-      <Flex>
-        <Flex.Item basis="33%">
+      <Stack>
+        <Stack.Item basis="33%">
           <Button
             fluid
             color="transparent"
@@ -199,8 +209,8 @@ const PDAFooter = (props: { onSettingsMode: Function }) => {
             fontSize={1.7}
             onClick={() => act('Back')}
           />
-        </Flex.Item>
-        <Flex.Item basis="33%">
+        </Stack.Item>
+        <Stack.Item basis="33%">
           <Button
             fluid
             color="transparent"
@@ -214,8 +224,8 @@ const PDAFooter = (props: { onSettingsMode: Function }) => {
               act('Home');
             }}
           />
-        </Flex.Item>
-      </Flex>
+        </Stack.Item>
+      </Stack>
     </Box>
   );
 };

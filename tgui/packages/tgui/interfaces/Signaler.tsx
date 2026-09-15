@@ -1,8 +1,6 @@
-import { toFixed } from 'common/math';
-
-import { useBackend } from '../backend';
-import { Button, NumberInput, Section, Table } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
+import { Button, NumberInput, Section, Table } from 'tgui-core/components';
 
 export const Signaler = () => {
   return (
@@ -28,21 +26,20 @@ export const SignalerContent = (props) => {
     <Section>
       <Table>
         <Table.Row>
-          <Table.Cell size={1.4} color="label">
-            Frequency:
-          </Table.Cell>
+          <Table.Cell color="label">Frequency:</Table.Cell>
           <Table.Cell>
             <NumberInput
               animated
+              tickWhileDragging
               unit="kHz"
               step={0.2}
               stepPixelSize={6}
               minValue={minFrequency / 10}
               maxValue={maxFrequency / 10}
               value={frequency / 10}
-              format={(value) => toFixed(value, 1)}
+              format={(value) => value.toFixed(1)}
               width="80px"
-              onDrag={(value) =>
+              onChange={(value) =>
                 act('freq', {
                   freq: value,
                 })
@@ -64,19 +61,18 @@ export const SignalerContent = (props) => {
           </Table.Cell>
         </Table.Row>
         <Table.Row mt={0.6}>
-          <Table.Cell size={1.4} color="label">
-            Code:
-          </Table.Cell>
+          <Table.Cell color="label">Code:</Table.Cell>
           <Table.Cell>
             <NumberInput
               animated
+              tickWhileDragging
               step={1}
               stepPixelSize={6}
               minValue={1}
               maxValue={100}
               value={code}
               width="80px"
-              onDrag={(value) =>
+              onChange={(value) =>
                 act('code', {
                   code: value,
                 })

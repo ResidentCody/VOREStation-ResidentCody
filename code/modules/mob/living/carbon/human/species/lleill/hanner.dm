@@ -8,7 +8,6 @@
 	transmutation and energy sharing abilities not unlike they lleill, but considerably more limited. Unlike \
 	other shapeshifter species, such as proteans or prometheans, Hanner have a typical humanoid set of organs and can not regenerate."
 
-	flags =  NO_SCAN
 	color_mult = 1
 	appearance_flags = HAS_SKIN_COLOR | HAS_EYE_COLOR | HAS_HAIR_COLOR | HAS_UNDERWEAR | HAS_LIPS
 	spawn_flags		 = SPECIES_CAN_JOIN | SPECIES_IS_WHITELISTED | SPECIES_WHITELIST_SELECTABLE
@@ -88,13 +87,17 @@
 		/mob/living/carbon/human/proc/shapeshifter_select_wings,
 		/mob/living/carbon/human/proc/shapeshifter_select_tail,
 		/mob/living/carbon/human/proc/shapeshifter_select_ears,
+		/mob/living/carbon/human/proc/shapeshifter_select_secondary_ears,
+		/mob/living/carbon/human/proc/shapeshifter_select_eye_colour,
 		/mob/living/proc/set_size,
+		/mob/living/carbon/human/proc/shapeshifter_copy_body,
+		/mob/living/carbon/human/proc/shapeshifter_regenerate,
 //		/mob/living/carbon/human/proc/lleill_contact,
 //		/mob/living/carbon/human/proc/lleill_alchemy,
 //		/mob/living/carbon/human/proc/hanner_beast_form
 		)
 
-	valid_transform_species = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_UNATHI, SPECIES_TAJ, SPECIES_SKRELL, SPECIES_ALTEVIAN, SPECIES_TESHARI, SPECIES_MONKEY, SPECIES_LLEILL, SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_RAPALA, SPECIES_NEVREAN, SPECIES_VASILISSAN, SPECIES_AKULA)
+	valid_transform_species = list(SPECIES_HUMAN, SPECIES_HUMAN_VATBORN, SPECIES_UNATHI, SPECIES_TAJARAN, SPECIES_SKRELL, SPECIES_ALTEVIAN, SPECIES_TESHARI, SPECIES_MONKEY, SPECIES_LLEILL, SPECIES_VULPKANIN, SPECIES_ZORREN_HIGH, SPECIES_RAPALA, SPECIES_NEVREAN, SPECIES_VASILISSAN, SPECIES_AKULA)
 
 	var/list/lleill_abilities = list(/datum/power/lleill/contact,
 									   /datum/power/lleill/alchemy,
@@ -108,13 +111,13 @@
 		var/datum/power/lleill/LP = new power(src)
 		lleill_ability_datums.Add(LP)
 
-/datum/species/shapeshifter/hanner/proc/add_lleill_abilities(var/mob/living/carbon/human/H)
-	if(!H.ability_master || !istype(H.ability_master, /obj/screen/movable/ability_master/lleill))
+/datum/species/shapeshifter/hanner/proc/add_lleill_abilities(mob/living/carbon/human/H)
+	if(!H.ability_master || !istype(H.ability_master, /atom/movable/screen/movable/ability_master/lleill))
 		H.ability_master = null
-		H.ability_master = new /obj/screen/movable/ability_master/lleill(H)
+		H.ability_master = new /atom/movable/screen/movable/ability_master/lleill(H)
 	for(var/datum/power/lleill/P in lleill_ability_datums)
 		if(!(P.verbpath in H.verbs))
-			H.verbs += P.verbpath
+			add_verb(H, P.verbpath)
 			H.ability_master.add_lleill_ability(
 					object_given = H,
 					verb_given = P.verbpath,
@@ -124,9 +127,9 @@
 					)
 	spawn (50)
 		if(H.lleill_display)
-			H.lleill_display.invisibility = 0
+			H.lleill_display.invisibility = INVISIBILITY_NONE
 			H.lleill_display.icon_state = "lleill-4"
 
-/datum/species/shapeshifter/hanner/add_inherent_verbs(var/mob/living/carbon/human/H)
+/datum/species/shapeshifter/hanner/add_inherent_verbs(mob/living/carbon/human/H)
 	..()
 	add_lleill_abilities(H)

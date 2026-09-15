@@ -1,16 +1,16 @@
-import { toFixed } from 'common/math';
-import { BooleanLike } from 'common/react';
-
-import { useBackend } from '../backend';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
   Box,
   Button,
-  Flex,
   LabeledList,
   NoticeBox,
   Section,
-} from '../components';
-import { Window } from '../layouts';
+  Stack,
+} from 'tgui-core/components';
+import { formatTime } from 'tgui-core/format';
+import type { BooleanLike } from 'tgui-core/react';
+
 import { RankIcon } from './common/RankIcon';
 
 type Data = {
@@ -18,6 +18,7 @@ type Data = {
   department_hours: Record<string, number> | undefined;
   user_name: string;
   assignment: string | null;
+  card_cooldown: number;
   job_datum: {
     title: string;
     departments: string;
@@ -37,6 +38,7 @@ export const TimeClock = (props) => {
     department_hours,
     user_name,
     card,
+    card_cooldown,
     assignment,
     job_datum,
     allow_change_job,
@@ -51,7 +53,7 @@ export const TimeClock = (props) => {
             OOC Note: PTO acquired is account-wide and shared across all
             characters. Info listed below is not IC information.
           </NoticeBox>
-          <Section title={'Time Off Balance for ' + user_name}>
+          <Section title={`Time Off Balance for ${user_name}`}>
             <LabeledList>
               {!!department_hours &&
                 Object.keys(department_hours).map((key) => (
@@ -66,8 +68,8 @@ export const TimeClock = (props) => {
                           : 'bad'
                     }
                   >
-                    {toFixed(department_hours[key], 1)}{' '}
-                    {department_hours[key] === 1 ? 'hour' : 'hours'}
+                    {`${department_hours[key].toFixed(1)} `}
+                    {`${department_hours[key] === 1 ? 'hour' : 'hours'}`}
                   </LabeledList.Item>
                 ))}
             </LabeledList>
@@ -84,18 +86,18 @@ export const TimeClock = (props) => {
               <>
                 <LabeledList.Item label="Rank">
                   <Box backgroundColor={job_datum.selection_color} p={0.8}>
-                    <Flex justify="space-between" align="center">
-                      <Flex.Item>
+                    <Stack justify="space-between" align="center">
+                      <Stack.Item>
                         <Box ml={1}>
                           <RankIcon color="white" rank={job_datum.title} />
                         </Box>
-                      </Flex.Item>
-                      <Flex.Item>
+                      </Stack.Item>
+                      <Stack.Item>
                         <Box fontSize={1.5} inline mr={1}>
                           {job_datum.title}
                         </Box>
-                      </Flex.Item>
-                    </Flex>
+                      </Stack.Item>
+                    </Stack>
                   </Box>
                 </LabeledList.Item>
                 <LabeledList.Item label="Departments">
@@ -128,6 +130,13 @@ export const TimeClock = (props) => {
                 department_hours[job_datum.pto_department] > 0 && (
                   <Button
                     fluid
+                    disabled={card_cooldown > 0}
+                    tooltip={
+                      card_cooldown > 0
+                        ? "You've recently modified your card, please wait " +
+                          formatTime(card_cooldown, 'short')
+                        : 'Clock out!'
+                    }
                     icon="exclamation-triangle"
                     onClick={() => act('switch-to-offduty')}
                   >
@@ -142,11 +151,18 @@ export const TimeClock = (props) => {
               (!!job_choices &&
                 Object.keys(job_choices).length &&
                 Object.keys(job_choices).map((job) => {
-                  let alt_titles = job_choices[job];
+                  const alt_titles = job_choices[job];
 
                   return alt_titles.map((title) => (
                     <Button
                       key={title}
+                      disabled={card_cooldown > 0}
+                      tooltip={
+                        card_cooldown > 0
+                          ? "You've recently modified your card, please wait " +
+                            formatTime(card_cooldown, 'short')
+                          : 'Clock in!'
+                      }
                       icon="suitcase"
                       onClick={() =>
                         act('switch-to-onduty-rank', {

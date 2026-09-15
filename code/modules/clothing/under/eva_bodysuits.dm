@@ -1,9 +1,6 @@
 /obj/item/clothing/under/undersuit // undersuits! intended for wearing under hardsuits or for being too lazy to not wear anything other than it
 	name = "undersuit"
 	desc = "A nondescript undersuit, intended for wearing under a voidsuit or other EVA equipment. Breathable, yet sleek."
-	icon = 'icons/inventory/uniform/item_vr.dmi'
-	default_worn_icon = 'icons/inventory/uniform/mob_vr.dmi'
-	rolled_down_icon = 'icons/inventory/uniform/mob_vr_rolled_down.dmi'
 	icon_state = "bodysuit"
 	item_state = "bodysuit"
 	rolled_sleeves = -1
@@ -76,7 +73,13 @@
 	name = "alternate undersuit, sleeveless"
 	desc = "A skin-tight synthetic bodysuit designed for comfort and mobility underneath hardsuits and voidsuits. This one is designed to stop at the mid-bicep, allowing total freedom to the wearer's forearms."
 	item_state = "altbodysuit_sleeveless"
-	body_parts_covered = UPPER_TORSO|LOWER_TORSO
+	body_parts_covered = CHEST
+
+/obj/item/clothing/under/undersuit/alt/no_sleeves
+	name = "alternate undersuit, no sleeves"
+	desc = "A skin-tight synthetic bodysuit designed for comfort and mobility underneath hardsuits and voidsuits. This one cuts off at the shoulder, allowing total freedom to the wearer's arms."
+	item_state = "altbodysuit_nosleeves"
+	body_parts_covered = CHEST
 
 /obj/item/clothing/under/undersuit/alt/fem
 	name = "alternate undersuit, feminine"
@@ -87,3 +90,8 @@
 	name = "alternate undersuit, feminine sleeveless"
 	desc = "A skin-tight synthetic bodysuit designed for comfort and mobility underneath hardsuits and voidsuits. This one is designed to stop at the mid-bicep, allowing total freedom to the wearer's forearms."
 	item_state = "altbodysuitfem_sleeveless"
+
+/obj/item/clothing/under/undersuit/alt/no_sleeves/fem
+	name = "alternate undersuit, feminine no sleeves"
+	desc = "A skin-tight synthetic bodysuit designed for comfort and mobility underneath hardsuits and voidsuits. This one cuts off at the shoulder, allowing total freedom to the wearer's arms."
+	item_state = "altbodysuitfem_nosleeves"

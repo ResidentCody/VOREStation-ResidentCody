@@ -1,8 +1,7 @@
-import { toFixed } from 'common/math';
-import { BooleanLike } from 'common/react';
+import { useBackend } from 'tgui/backend';
+import { Box, Button, LabeledList } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
-import { useBackend } from '../../backend';
-import { Box, Button, LabeledList } from '../../components';
 type Data = {
   ETAnext: string;
   speed: number;
@@ -25,7 +24,7 @@ export const OvermapFlightData = (props) => {
     <LabeledList>
       <LabeledList.Item label="ETA To Next Grid">{ETAnext}</LabeledList.Item>
       <LabeledList.Item label="Speed" color={speed_color}>
-        {toFixed(speed, 2)} Gm/h
+        {speed.toFixed(2)} Gm/h
       </LabeledList.Item>
       <LabeledList.Item label="Acceleration">{accel} Gm/h</LabeledList.Item>
       <LabeledList.Item label="Heading">{heading}&deg;</LabeledList.Item>

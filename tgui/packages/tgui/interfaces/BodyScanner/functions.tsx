@@ -1,14 +1,18 @@
-import { BooleanLike } from 'common/react';
-
-import { Box } from '../../components';
+import { Box } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
 
 /*
  */
-export function mapTwoByTwo(a: any[][], c: any) {
-  let result: any[] = [];
+export function mapTwoByTwo<T, R>(
+  a: T[][],
+  c: (row1: T[], row2: T[] | undefined, index: number) => R,
+): R[] {
+  const result: R[] = [];
+
   for (let i = 0; i < a.length; i += 2) {
     result.push(c(a[i], a[i + 1], i));
   }
+
   return result;
 }
 

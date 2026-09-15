@@ -1,4 +1,11 @@
-import { CheckboxInput, FeatureToggle } from '../base';
+import {
+  CheckboxInput,
+  type Feature,
+  FeatureNumberInput,
+  type FeatureNumeric,
+  FeatureSliderInput,
+  type FeatureToggle,
+} from '../base';
 
 export const SOUND_MIDI: FeatureToggle = {
   name: 'Play Admin MIDIs',
@@ -18,6 +25,20 @@ export const SOUND_AMBIENCE: FeatureToggle = {
   name: 'Play Ambience',
   category: 'SOUNDS',
   description: 'Enable hearing ambient sounds and music.',
+  component: CheckboxInput,
+};
+
+export const sound_instruments: Feature<number> = {
+  name: 'Instruments volume',
+  category: 'SOUNDS',
+  description: 'Volume of instruments.',
+  component: FeatureSliderInput,
+};
+
+export const sound_fridgehum: FeatureToggle = {
+  name: 'Play Fridge Hum',
+  category: 'SOUNDS',
+  description: 'Enable hearing the ambient hum fridges make.',
   component: CheckboxInput,
 };
 
@@ -56,6 +77,14 @@ export const SAY_SOUNDS: FeatureToggle = {
   component: CheckboxInput,
 };
 
+export const BLOOP_SOUNDS: FeatureToggle = {
+  name: 'Multiple Say Sounds',
+  category: 'SOUNDS',
+  description:
+    'Enable hearing a say sound play multiple times for longer messages.',
+  component: CheckboxInput,
+};
+
 export const EMOTE_SOUNDS: FeatureToggle = {
   name: 'Me Sounds',
   category: 'SOUNDS',
@@ -74,6 +103,13 @@ export const SUBTLE_SOUNDS: FeatureToggle = {
   name: 'Subtle Sounds',
   category: 'SOUNDS',
   description: 'Enable hearing a sound when somebody uses subtle.',
+  component: CheckboxInput,
+};
+
+export const LOOC_SOUNDS: FeatureToggle = {
+  name: 'LOOC Sounds',
+  category: 'SOUNDS',
+  description: 'Enable hearing a sound when somebody uses LOOC.',
   component: CheckboxInput,
 };
 
@@ -133,24 +169,25 @@ export const SOUND_MENTORHELP: FeatureToggle = {
   component: CheckboxInput,
 };
 
-// Vorey sounds
-export const BELCH_NOISES: FeatureToggle = {
-  name: 'Belch Noises',
+export const ambience_freq: FeatureNumeric = {
+  name: 'Ambience Frequency',
   category: 'SOUNDS',
-  description: 'Enable hearing burping noises.',
-  component: CheckboxInput,
+  description:
+    'How often you wish to hear ambience repeated! (1-60 MINUTES, 0 for disabled)',
+  component: FeatureNumberInput,
 };
 
-export const EATING_NOISES: FeatureToggle = {
-  name: 'Eating Noises',
+export const ambience_chance: FeatureNumeric = {
+  name: 'Ambience Chance',
   category: 'SOUNDS',
-  description: 'Enable hearing vore eating noises.',
-  component: CheckboxInput,
+  description:
+    "The chance you'd like to hear ambience played to you (On area change, or by random ambience). 35 means a 35% chance to play ambience. This is a range from 0-100. 0 disables ambience playing entirely. This is also affected by Ambience Frequency.",
+  component: FeatureNumberInput,
 };
 
-export const DIGEST_NOISES: FeatureToggle = {
-  name: 'Digestion Noises',
+export const media_volume: FeatureNumeric = {
+  name: 'Jukebox Volume',
   category: 'SOUNDS',
-  description: 'Enable hearing vore digestion noises.',
-  component: CheckboxInput,
+  description: 'The percentage volume of the Jukebox from 0% to 100%.',
+  component: FeatureNumberInput,
 };

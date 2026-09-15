@@ -1,11 +1,11 @@
-import { useBackend } from '../../backend';
-import { Box } from '../../components';
-import { Window } from '../../layouts';
-import { TemporaryNotice } from '../common/TemporaryNotice';
+import { useBackend } from 'tgui/backend';
+import { TemporaryNotice } from 'tgui/interfaces/common/TemporaryNotice';
+import { Window } from 'tgui/layouts';
+import { Box } from 'tgui-core/components';
 import { MessageMonitorContent } from './MessageMonitorContent';
 import { MessageMonitorHack } from './MessageMonitorHack';
 import { MessageMonitorLogin } from './MessageMonitorLogin';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const MessageMonitor = (props) => {
   const { data } = useBackend<Data>();

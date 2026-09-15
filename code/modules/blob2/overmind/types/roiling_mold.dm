@@ -23,7 +23,7 @@
 	spore_projectile = /obj/item/projectile/arc/spore
 	factory_type = /obj/structure/blob/factory/turret
 
-/datum/blob_type/roiling_mold/proc/find_target(var/obj/structure/blob/B, var/tries = 0, var/list/previous_targets = null)
+/datum/blob_type/roiling_mold/proc/find_target(obj/structure/blob/B, tries = 0, list/previous_targets = null)
 	if(tries > 3)
 		return
 	var/mob/living/L = locate() in (view(world.view + 3, get_turf(B)) - view(2,get_turf(B)) - previous_targets)	// No adjacent mobs.
@@ -38,7 +38,7 @@
 
 	return L
 
-/datum/blob_type/roiling_mold/on_pulse(var/obj/structure/blob/B)
+/datum/blob_type/roiling_mold/on_pulse(obj/structure/blob/B)
 	var/mob/living/L = find_target(B)
 
 	if(!istype(L))
@@ -48,7 +48,7 @@
 		var/obj/item/projectile/arc/spore/P = new(get_turf(B))
 		P.launch_projectile(L, BP_TORSO, B)
 
-/datum/blob_type/roiling_mold/on_chunk_use(obj/item/weapon/blobcore_chunk/B, mob/living/user)
+/datum/blob_type/roiling_mold/on_chunk_use(obj/item/blobcore_chunk/B, mob/living/user)
 	for(var/mob/living/L in oview(world.view, get_turf(B)))
 		if(istype(user) && user == L)
 			continue
@@ -58,7 +58,7 @@
 
 		var/obj/item/projectile/P = new spore_projectile(get_turf(B))
 
-		user.visible_message("<span class='danger'>[icon2html(B,viewers(user))] \The [B] discharges energy toward \the [L]!</span>")
+		user.visible_message(span_danger("[icon2html(B,viewers(user))] \The [B] discharges energy toward \the [L]!"))
 		P.launch_projectile(L, BP_TORSO, user)
 
 	return

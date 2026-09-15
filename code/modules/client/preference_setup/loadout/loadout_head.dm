@@ -78,7 +78,7 @@
 
 /datum/gear/head/cap/white/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/halo
 	display_name = "halo (colorable)"
@@ -86,7 +86,7 @@
 
 /datum/gear/head/halo/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/cap/sol
 	display_name = "cap, sol"
@@ -134,7 +134,7 @@
 
 /datum/gear/head/hairflower/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/pin
 	display_name = "pin selection"
@@ -205,7 +205,7 @@
 
 /datum/gear/head/hijab/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/kippa
 	display_name = "kippa"
@@ -213,7 +213,7 @@
 
 /datum/gear/head/kippa/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/turban
 	display_name = "turban"
@@ -221,7 +221,7 @@
 
 /datum/gear/head/turban/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/taqiyah
 	display_name = "taqiyah"
@@ -229,7 +229,7 @@
 
 /datum/gear/head/taqiyah/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/kitty
 	display_name = "kitty ears"
@@ -239,13 +239,17 @@
 	display_name = "rabbit ears"
 	path = /obj/item/clothing/head/rabbitears
 
+/datum/gear/head/rabbit/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
 /datum/gear/head/beanie
 	display_name = "beanie"
 	path = /obj/item/clothing/head/beanie
 
 /datum/gear/head/beanie/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/loose_beanie
 	display_name = "loose beanie"
@@ -253,7 +257,7 @@
 
 /datum/gear/head/loose_beanie/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/beretg
 	display_name = "beret"
@@ -261,7 +265,7 @@
 
 /datum/gear/head/beretg/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/sombrero
 	display_name = "sombrero"
@@ -273,7 +277,7 @@
 
 /datum/gear/head/flatcapg/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/bow/small
 	display_name = "hair bow, small (colorable)"
@@ -281,7 +285,7 @@
 
 /datum/gear/head/bow/small/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/welding
 	display_name = "welding mask selection"
@@ -414,7 +418,7 @@
 
 /datum/gear/head/giantbow/New()
 	..()
-	gear_tweaks += gear_tweak_free_color_choice
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
 
 /datum/gear/head/bows
 	display_name = "hair bow selection, colorable"
@@ -428,7 +432,7 @@
 	"back bow"=/obj/item/clothing/head/bow/back,
 	"sweet bow"=/obj/item/clothing/head/bow/sweet
 	)
-	gear_tweaks += list(new/datum/gear_tweak/path(bows), gear_tweak_free_color_choice)
+	gear_tweaks += list(new/datum/gear_tweak/path(bows), GLOB.gear_tweak_free_color_choice)
 
 /datum/gear/head/pilot
 	display_name = "pilot helmets selection"
@@ -445,3 +449,109 @@
 		"pilot helmet, major bill's transport"=/obj/item/clothing/head/pilot_vr/mbill
 	)
 	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
+
+/datum/gear/head/headbando
+	display_name = "basic headband"
+	path = /obj/item/clothing/head/fluff/headbando
+
+/datum/gear/head/headbando/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/head/maid
+	display_name = "maid headband selection"
+	path = /obj/item/clothing/head/headband/maid
+
+/datum/gear/head/maid/New()
+	..()
+	var/list/headbands_list = list()
+	for(var/obj/item/clothing/head/bands as anything in typesof(/obj/item/clothing/head/headband/maid))
+		headbands_list[initial(bands.name)] = bands
+	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(headbands_list))
+
+//Detective alternative
+/datum/gear/head/detective_alt
+	display_name = "cyberscope headgear, detective"
+	path = /obj/item/clothing/head/helmet/detective_alt
+	allowed_roles = list(JOB_HEAD_OF_SECURITY, JOB_DETECTIVE)
+
+/datum/gear/head/bearpelt
+	display_name = "animal pelt selection"
+	description = "Select from a range of (probably, hopefully) synthetic/artificial animal pelts."
+	path = /obj/item/clothing/head/pelt
+
+/datum/gear/head/bearpelt/New()
+	..()
+	var/list/selector_uniforms = list(
+		"bear, brown"=/obj/item/clothing/head/pelt,
+		"wolf, brown"=/obj/item/clothing/head/pelt/wolfpelt,
+		"wolf, black"=/obj/item/clothing/head/pelt/wolfpeltblack,
+		"tiger, plain"=/obj/item/clothing/head/pelt/tigerpelt,
+		"tiger, white"=/obj/item/clothing/head/pelt/tigerpeltsnow,
+		"tiger, pink"=/obj/item/clothing/head/pelt/tigerpeltpink
+	)
+	gear_tweaks += new/datum/gear_tweak/path(sortAssoc(selector_uniforms))
+
+/datum/gear/head/magic_hat
+	display_name = "wizard hat, colorable"
+	path = /obj/item/clothing/head/wizard/fake/realistic/colorable
+
+/datum/gear/head/magic_hat/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/head/wedding
+	display_name = "wedding veil"
+	path = /obj/item/clothing/head/wedding
+
+/datum/gear/head/wedding/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/head/halo/alt
+	display_name = "halo, alt"
+	path = /obj/item/clothing/head/halo/alt
+
+/datum/gear/head/buckethat
+	display_name = "hat, bucket"
+	path = /obj/item/clothing/head/buckethat
+
+/datum/gear/head/buckethat/New()
+	..()
+	gear_tweaks += GLOB.gear_tweak_free_color_choice
+
+/datum/gear/head/nonla
+	display_name = "hat, non la"
+	path = /obj/item/clothing/head/nonla
+
+/*
+Talon hats
+*/
+/datum/gear/head/cap/talon
+	display_name = "cap, Talon"
+	path = /obj/item/clothing/head/soft/talon
+
+/datum/gear/head/beret/talon
+	display_name = "beret, Talon"
+	path = /obj/item/clothing/head/beret
+
+// tiny tophat
+
+/datum/gear/head/tiny_tophat
+	display_name = "tiny tophat"
+	path = /obj/item/clothing/head/tinytophat
+
+//Replikant hat
+
+/datum/gear/head/eulrhat
+	display_name = "Sleek side cap"
+	path = /obj/item/clothing/head/eulrhat
+
+//Formerly my custom fluff gear, but free to use for anyone, now.
+/datum/gear/head/purple_tiara
+	display_name = "pink tourmaline tiara"
+	path = /obj/item/clothing/head/fluff/pink_tiara
+
+/datum/gear/head/pirate_hat
+	display_name = "pirate hat"
+	path = /obj/item/clothing/head/pirate

@@ -1,8 +1,8 @@
 import { useState } from 'react';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
+import { Box } from 'tgui-core/components';
 
-import { useBackend } from '../../backend';
-import { Box } from '../../components';
-import { Window } from '../../layouts';
 import { CrewManifestContent } from '../CrewManifest';
 import { CommunicatorContactTab } from './CommunicatorContactTab';
 import {
@@ -20,21 +20,17 @@ import { CommunicatorPhoneTab } from './CommunicatorPhoneTab';
 import { CommunicatorSettingsTab } from './CommunicatorSettingsTab';
 import { CommunicatorWeatherTab } from './CommunicatorWeatherTab';
 import { notFound, tabs } from './constants';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const Communicator = () => {
   const { act, data } = useBackend<Data>();
 
-  const { currentTab, video_comm } = data;
+  const { theme, currentTab, video_comm } = data;
 
   const tab: React.JSX.Element[] = [];
 
   const [videoSetting, setVideoSetting] = useState(0);
   const [clipboardMode, setClipboardMode] = useState(false);
-
-  function handleClipboardMode(value: boolean) {
-    setClipboardMode(value);
-  }
 
   tab[tabs[0]] = <CommunicatorHomeTab />;
   tab[tabs[1]] = <CommunicatorPhoneTab />;
@@ -43,7 +39,7 @@ export const Communicator = () => {
   tab[tabs[4]] = (
     <CommunicatorMessageSubTab
       clipboardMode={clipboardMode}
-      onClipboardMode={handleClipboardMode}
+      onClipboardMode={setClipboardMode}
     />
   );
   tab[tabs[5]] = <CommunicatorNewsTab />;
@@ -53,7 +49,7 @@ export const Communicator = () => {
   tab[tabs[9]] = <CommunicatorSettingsTab />;
 
   return (
-    <Window width={475} height={700}>
+    <Window width={475} height={700} theme={theme}>
       <Window.Content>
         {video_comm && (
           <VideoComm

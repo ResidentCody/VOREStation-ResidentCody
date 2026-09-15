@@ -8,16 +8,17 @@
 	var/list/spawn_cartridges = null // Set to a list of types to spawn one of each on New()
 
 	var/list/cartridges = list() // Associative, label -> cartridge
-	var/obj/item/weapon/reagent_containers/container = null
+	var/obj/item/reagent_containers/container = null
 
 	var/ui_title = "Chemical Dispenser"
 
-	var/accept_drinking = 0
+	///If the dispenser is a drink dispenser. Used for update_icon() to prevent beakers from being displayed.
+	var/accept_drinking = FALSE
 	var/amount = 30
-	var/max_catriges = 30
+	var/max_cartridges = 30
 
 	use_power = USE_POWER_IDLE
-	idle_power_usage = 100
+	idle_power_usage = 0.1 KILOWATTS
 	anchored = TRUE
 	unacidable = TRUE
 
@@ -25,67 +26,88 @@
 	var/list/recording_recipe
 	/// Saves all the recipes recorded by the machine
 	var/list/saved_recipes = list()
+	var/import_job = JOB_CHEMIST
 
-/obj/machinery/chemical_dispenser/Initialize()
+/obj/machinery/chemical_dispenser/Initialize(mapload)
 	. = ..()
 	if(spawn_cartridges)
 		for(var/type in spawn_cartridges)
-			add_cartridge(new type(src))
+			add_cartridge(new type(src), forced = TRUE)
+	AddElement(/datum/element/rotatable)
 
 /obj/machinery/chemical_dispenser/examine(mob/user)
 	. = ..()
-	. += "It has [cartridges.len] cartridges installed, and has space for [max_catriges - cartridges.len] more."
+	. += "It has [cartridges.len] cartridges installed, and has space for [max_cartridges - cartridges.len] more."
+	. += "It'll take a prying tool to retrieve installed cartridges."
 
-/obj/machinery/chemical_dispenser/verb/rotate_clockwise()
-	set name = "Rotate Dispenser Clockwise"
-	set category = "Object"
-	set src in oview(1)
-
-	if (src.anchored || usr:stat)
-		to_chat(usr, "It is fastened down!")
-		return 0
-	src.set_dir(turn(src.dir, 270))
-	return 1
-
-//VOREstation edit: counter-clockwise rotation
-/obj/machinery/chemical_dispenser/verb/rotate_counterclockwise()
-	set name = "Rotate Dispenser Counter-Clockwise"
-	set category = "Object"
-	set src in oview(1)
-
-	if (src.anchored || usr:stat)
-		to_chat(usr, "It is fastened down!")
-		return 0
-	src.set_dir(turn(src.dir, 90))
-	return 1
-//VOREstation edit end
-
-/obj/machinery/chemical_dispenser/proc/add_cartridge(obj/item/weapon/reagent_containers/chem_disp_cartridge/C, mob/user)
-	if(!istype(C))
-		if(user)
-			to_chat(user, "<span class='warning'>\The [C] will not fit in \the [src]!</span>")
+/obj/machinery/chemical_dispenser/update_icon()
+	if(accept_drinking) //drink dispensors don't have fancy sprites, so this is a very handy checker
+		icon_state = initial(icon_state) //just in case some weirdness happens I guess.
 		return
 
-	if(cartridges.len >= max_catriges)
+	cut_overlays()
+	icon_state = initial(icon_state)
+	if(panel_open)
+		add_overlay("[initial(icon_state)]_panel-o")
+	if(container)
+		icon_state = "[initial(icon_state)]_working"
+		if(istype(container, /obj/item/reagent_containers/glass/beaker/bluespace))
+			add_overlay("[initial(icon_state)]_bsbeaker")
+		if(istype(container, /obj/item/reagent_containers/glass/beaker/noreact))
+			add_overlay("[initial(icon_state)]_nrbeaker")
+		else	//the only see-through one gets filling updates, and we can only do glass and subtypes of glass anyway.
+			var/obj/item/reagent_containers/glass/C = container
+			if(C.reagents && C.reagents.total_volume)
+				var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "[initial(icon_state)]_1")
+				var/percent = round((C.reagents.total_volume / C.volume) * 100)
+				switch(percent)
+					if(0 to 1)			filling.icon_state = "nofill"
+					if(2 to 35)			filling.icon_state = "[initial(icon_state)]_1"
+					if(36 to 74)		filling.icon_state = "[initial(icon_state)]_5"
+					if(75 to INFINITY)	filling.icon_state = "[initial(icon_state)]_10"
+				filling.color = C.reagents.get_color()
+				//Add our filling, if any.
+				add_overlay(filling)
+				//Then overlay the beaker atop of the filling, so it appears behind it.
+				add_overlay("[initial(icon_state)]_beaker")
+
+	if(stat & NOPOWER)
+		icon_state = "[initial(icon_state)]_nopower"
+
+	if(stat & BROKEN)
+		icon_state = "[initial(icon_state)]_broken"
+	return
+
+/obj/machinery/chemical_dispenser/proc/add_cartridge(obj/item/reagent_containers/chem_disp_cartridge/C, mob/user, forced = FALSE)
+	if(!panel_open && !forced)
+		to_chat(user, span_warning("You need to open the access hatch first!"))
+		return
+
+	if(!istype(C))
 		if(user)
-			to_chat(user, "<span class='warning'>\The [src] does not have any slots open for \the [C] to fit into!</span>")
+			to_chat(user, span_warning("\The [C] will not fit in \the [src]!"))
+		return
+
+	if(cartridges.len >= max_cartridges)
+		if(user)
+			to_chat(user, span_warning("\The [src] does not have any slots open for \the [C] to fit into!"))
 		return
 
 	if(!C.label)
 		if(user)
-			to_chat(user, "<span class='warning'>\The [C] does not have a label!</span>")
+			to_chat(user, span_warning("\The [C] does not have a label!"))
 		return
 
 	if(cartridges[C.label])
 		if(user)
-			to_chat(user, "<span class='warning'>\The [src] already contains a cartridge with that label!</span>")
+			to_chat(user, span_warning("\The [src] already contains a cartridge with that label!"))
 		return
 
 	if(user)
 		user.drop_from_inventory(C)
-		to_chat(user, "<span class='notice'>You add \the [C] to \the [src].</span>")
+		to_chat(user, span_notice("You add \the [C] to \the [src]."))
 
-	C.loc = src
+	C.forceMove(src)
 	cartridges[C.label] = C
 	cartridges = sortAssoc(cartridges)
 	SStgui.update_uis(src)
@@ -95,52 +117,69 @@
 	cartridges -= label
 	SStgui.update_uis(src)
 
-/obj/machinery/chemical_dispenser/attackby(obj/item/weapon/W, mob/user)
-	if(W.has_tool_quality(TOOL_WRENCH))
-		playsound(src, W.usesound, 50, 1)
-		to_chat(user, "<span class='notice'>You begin to [anchored ? "un" : ""]fasten \the [src].</span>")
-		if (do_after(user, 20 * W.toolspeed))
-			user.visible_message(
-				"<span class='notice'>\The [user] [anchored ? "un" : ""]fastens \the [src].</span>",
-				"<span class='notice'>You have [anchored ? "un" : ""]fastened \the [src].</span>",
-				"You hear a ratchet.")
-			anchored = !anchored
-		else
-			to_chat(user, "<span class='notice'>You decide not to [anchored ? "un" : ""]fasten \the [src].</span>")
+/obj/machinery/chemical_dispenser/attackby(obj/item/W, mob/user)
+	if(default_unfasten_wrench(user, W, 5 SECONDS))
+		return
 
-	else if(istype(W, /obj/item/weapon/reagent_containers/chem_disp_cartridge))
+	if(istype(W, /obj/item/reagent_containers/chem_disp_cartridge))
 		add_cartridge(W, user)
 
-	else if(W.has_tool_quality(TOOL_SCREWDRIVER))
-		var/label = tgui_input_list(user, "Which cartridge would you like to remove?", "Chemical Dispenser", cartridges)
-		if(!label) return
-		var/obj/item/weapon/reagent_containers/chem_disp_cartridge/C = remove_cartridge(label)
-		if(C)
-			to_chat(user, "<span class='notice'>You remove \the [C] from \the [src].</span>")
-			C.loc = loc
-			playsound(src, W.usesound, 50, 1)
+	if(default_deconstruction_screwdriver(user, W))
+		update_icon() //open the hatch!
+		return
 
-	else if(istype(W, /obj/item/weapon/reagent_containers/glass) || istype(W, /obj/item/weapon/reagent_containers/food))
+	if(panel_open)
+		if(W.has_tool_quality(TOOL_CROWBAR))	//I would make the deconstructable, but the cartridge system makes this... unwise.
+			var/label = tgui_input_list(user, "Which cartridge would you like to remove?", "Chemical Dispenser", cartridges)
+			if(!label || !Adjacent(user)) return
+			var/obj/item/reagent_containers/chem_disp_cartridge/C = remove_cartridge(label)
+			if(C)
+				to_chat(user, span_notice("You remove [C] from [src]."))
+				C.forceMove(get_turf(src))
+				playsound(src, W.usesound, 50, 1)
+
+	if(istype(W, /obj/item/reagent_containers/glass) || istype(W, /obj/item/reagent_containers/food))
 		if(container)
-			to_chat(user, "<span class='warning'>There is already \a [container] on \the [src]!</span>")
+			to_chat(user, span_warning("There is already \a [container] on \the [src]!"))
 			return
 
-		var/obj/item/weapon/reagent_containers/RC = W
+		var/obj/item/reagent_containers/RC = W
 
-		if(!accept_drinking && istype(RC,/obj/item/weapon/reagent_containers/food))
-			to_chat(user, "<span class='warning'>This machine only accepts beakers!</span>")
+		if(!accept_drinking && istype(RC,/obj/item/reagent_containers/food))
+			to_chat(user, span_warning("This machine only accepts beakers!"))
 			return
 
 		if(!RC.is_open_container())
-			to_chat(user, "<span class='warning'>You don't see how \the [src] could dispense reagents into \the [RC].</span>")
+			to_chat(user, span_warning("You don't see how \the [src] could dispense reagents into \the [RC]."))
 			return
 
-		container =  RC
-		user.drop_from_inventory(RC)
-		RC.loc = src
-		to_chat(user, "<span class='notice'>You set \the [RC] on \the [src].</span>")
+		if(istype(RC, /obj/item/reagent_containers/glass/cooler_bottle))
+			to_chat(user, span_warning("You don't see how \the [RC] could fit into \the [src]."))
+			return
+
+		replace_container(user, RC)
+		to_chat(user, span_notice("You set \the [RC] on \the [src]."))
+		update_icon()
 	else
 		return ..()
+
+/obj/machinery/chemical_dispenser/click_alt(mob/user)
+	if(container)
+		replace_container(user, null)
+
+/obj/machinery/chemical_dispenser/proc/replace_container(mob/living/user, obj/item/reagent_containers/new_container)
+	if(container)
+		container.forceMove(drop_location())
+		if(user && Adjacent(user))
+			user.put_in_hands(container)
+	if(new_container)
+		if(user && Adjacent(user))
+			user.drop_from_inventory(new_container, src)
+		container = new_container
+	else
+		container = null
+	update_icon()
+	return TRUE
 
 /obj/machinery/chemical_dispenser/tgui_interact(mob/user, datum/tgui/ui = null)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -169,7 +208,7 @@
 
 	var/chemicals[0]
 	for(var/label in cartridges)
-		var/obj/item/weapon/reagent_containers/chem_disp_cartridge/C = cartridges[label]
+		var/obj/item/reagent_containers/chem_disp_cartridge/C = cartridges[label]
 		chemicals.Add(list(list("name" = label, "id" = label, "volume" = C.reagents.total_volume))) // list in a list because Byond merges the first list...
 	data["chemicals"] = chemicals
 
@@ -196,9 +235,10 @@
 			if(recording_recipe)
 				recording_recipe += list(list("id" = label, "amount" = amount))
 			else if(cartridges[label] && container && container.is_open_container())
-				var/obj/item/weapon/reagent_containers/chem_disp_cartridge/C = cartridges[label]
+				var/obj/item/reagent_containers/chem_disp_cartridge/C = cartridges[label]
 				playsound(src, 'sound/machines/reagent_dispense.ogg', 25, 1)
 				C.reagents.trans_to(container, amount)
+			update_icon()
 			. = TRUE
 
 		if("remove")
@@ -211,14 +251,28 @@
 				R.remove_reagent(id, amount)
 			else if(amount == -1) // Isolate
 				R.isolate_reagent(id)
+			update_icon()
 			. = TRUE
 
 		if("ejectBeaker")
-			if(container)
-				container.forceMove(get_turf(src))
-				if(Adjacent(ui.user)) // So the AI doesn't get a beaker somehow.
-					ui.user.put_in_hands(container)
-				container = null
+			replace_container(ui.user)
+			. = TRUE //no afterattack
+
+		if("import_config")
+			if(import_job && (ui.user.mind.assigned_role != import_job))
+				to_chat(ui.user, span_warning("This option is only available to the job: [import_job]"))
+				return FALSE
+			var/list/our_data = params["config"]
+			if(!islist(our_data))
+				return FALSE
+			var/list/new_recipes = list()
+			for(var/key, value in our_data)
+				if(istext(key) && islist(value))
+					for(var/list/steps in value)
+						if(istext(steps["id"]) && isnum(steps["amount"]))
+							new_recipes[key] += list(list("id" = steps["id"], "amount" = steps["amount"]))
+			if(length(new_recipes))
+				saved_recipes = new_recipes
 			. = TRUE
 
 		if("record_recipe")
@@ -267,7 +321,7 @@
 					var/label = L["id"]
 					var/dispense_amount = L["amount"]
 
-					var/obj/item/weapon/reagent_containers/chem_disp_cartridge/C = cartridges[label]
+					var/obj/item/reagent_containers/chem_disp_cartridge/C = cartridges[label]
 					if(!C)
 						visible_message(span_warning("[src] buzzes."), span_warning("You hear a faint buzz."))
 						to_chat(ui.user, span_warning("[src] cannot find <b>[label]</b>!"))
@@ -279,7 +333,7 @@
 					var/amount_actually_dispensed = C.reagents.trans_to(container, dispense_amount)
 					if(dispense_amount != amount_actually_dispensed)
 						visible_message(span_warning("[src] buzzes."), span_warning("You hear a faint buzz."))
-						to_chat(ui.user, span_warning("[src] was only able to dispense [amount_actually_dispensed]u out of [dispense_amount]u requested of <b>[label]</b>!"))
+						to_chat(ui.user, span_warning("[src] was only able to dispense [amount_actually_dispensed ? amount_actually_dispensed : 0]u out of [dispense_amount]u requested of <b>[label]</b>!"))
 						playsound(src, 'sound/machines/buzz-two.ogg', 50, TRUE)
 						break
 			else

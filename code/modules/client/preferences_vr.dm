@@ -2,21 +2,18 @@
 	var/show_in_directory = 1	//Show in Character Directory
 	var/directory_tag = "Unset" //Sorting tag to use in character directory
 	var/directory_erptag = "Unset"	//ditto, but for non-vore scenes
+	var/directory_gendertag = "Unset" // Gender stuff!
+	var/directory_sexualitytag = "Unset" // Sexuality!
 	var/directory_ad = ""		//Advertisement stuff to show in character directory.
 	var/sensorpref = 5			//Set character's suit sensor level
 	var/capture_crystal = 1	//Whether or not someone is able to be caught with capture crystals
 	var/auto_backup_implant = FALSE //Whether someone starts with a backup implant or not.
 	var/borg_petting = TRUE //Whether someone can be petted as a borg or not.
-	var/stomach_vision = TRUE //Whether or not someone can view stomach sprites
-
-	var/job_talon_high = 0
-	var/job_talon_med = 0
-	var/job_talon_low = 0
 
 //Why weren't these in game toggles already?
 /client/verb/toggle_capture_crystal()
 	set name = "Toggle Catchable"
-	set category = "Preferences"
+	set category = "Preferences.Character"
 	set desc = "Toggles being catchable with capture crystals."
 
 	var/mob/living/L = mob

@@ -29,7 +29,7 @@
 	#define JOB_ALT_SECURITY_MANAGER "Security Manager"
 
 #define JOB_CHIEF_ENGINEER "Chief Engineer"
-	// Cheif Engineer alt titles
+	// Chief Engineer alt titles
 	#define JOB_ALT_HEAD_ENGINEER "Head Engineer"
 	#define JOB_ALT_FOREMAN "Foreman"
 	#define JOB_ALT_MAINTENANCE_MANAGER "Maintenance Manager"
@@ -107,6 +107,9 @@
 	#define JOB_ALT_CARGO_HANDLER "Cargo Handler"
 	#define JOB_ALT_SUPPLY_COURIER "Supply Courier"
 	#define JOB_ALT_DISPOSALS_SORTER "Disposals Sorter"
+	#define JOB_ALT_MAILMAN "Mailman"
+	#define JOB_ALT_DELIVERY_WORKER "Delivery Worker"
+	#define JOB_ALT_LOGISTICS_CONTRACTOR "Logistics Contractor"
 
 #define JOB_SHAFT_MINER "Shaft Miner"
 	// Shaft Miner alt titles
@@ -114,6 +117,7 @@
 	#define JOB_ALT_DRILL_TECHNICIAN "Drill Technician"
 	#define JOB_ALT_PROSPECTOR "Prospector"
 	#define JOB_ALT_EXCAVATOR "Excavator"
+	#define JOB_ALT_MINING_CONTRACTOR "Mining Contractor"
 
 #define JOB_JANITOR "Janitor"
 	// Janitor alt titles
@@ -189,6 +193,8 @@
 	#define JOB_ALT_FISHER "Fisher"
 	#define JOB_ALT_FORTUNE_TELLER "Fortune Teller"
 	#define JOB_ALT_SPIRIT_HEALER "Spirit Healer"
+	#define JOB_ALT_EDUCATOR "Educator"
+	#define JOB_ALT_INSTRUCTOR "Instructor"
 //___________________________________________________________
 
 
@@ -200,6 +206,10 @@
 	#define JOB_ALT_ELECTRICIAN "Electrician"
 	#define JOB_ALT_CONSTRUCTION_ENGINEER "Construction Engineer"
 	#define JOB_ALT_ENGINEERING_CONTRACTOR "Engineering Contractor"
+	#define JOB_ALT_CHEMENGINEER "Chemical Engineer"
+	#define JOB_ALT_COMPUTER_TECHNICIAN "Computer Technician"
+	#define JOB_ALT_SALVAGE_TECHNICIAN "Salvage Technician"
+	#define JOB_ALT_DAMAGE_CONTROL_SPECIALIST "Damage Control Specialist"
 
 #define JOB_ATMOSPHERIC_TECHNICIAN "Atmospheric Technician"
 	// Atmospheric Technician alt titles
@@ -207,6 +217,14 @@
 	#define JOB_ALT_ATMOSPHERIC_MAINTAINER "Atmospheric Maintainer"
 	#define JOB_ALT_DISPOSALS_TECHNICIAN "Disposals Technician"
 	#define JOB_ALT_FUEL_TECHNICIAN "Fuel Technician"
+	#define JOB_ALT_FIREFIGHTER "Firefighter"
+
+#define JOB_TELECOMMS_SPECIALIST "Telecomms Specialist"
+	// Telecomms Specialist alt titles
+	#define JOB_ALT_WIRELESS_OPERATOR "Wireless Operator"
+	#define JOB_ALT_NETWORK_ENGINEER "Network Engineer"
+	#define JOB_ALT_SYSADMIN "Sysadmin"
+	#define JOB_ALT_TECHNICIAN "Tram Technician"
 //___________________________________________________________
 
 
@@ -236,6 +254,8 @@
 	#define JOB_ALT_ORDERLY "Orderly"
 	#define JOB_ALT_VIROLOGIST "Virologist"
 	#define JOB_ALT_MEDICAL_CONTRACTOR "Medical Contractor"
+	#define JOB_ALT_CORONER "Coroner"
+
 
 #define JOB_CHEMIST "Chemist"
 	// Chemist alt titles
@@ -281,6 +301,7 @@
 	#define JOB_ALT_GAS_PHYSICIST "Gas Physicist"
 	#define JOB_ALT_CIRCUIT_DESIGNER "Circuit Designer"
 	#define JOB_ALT_CIRCUIT_PROGRAMMER "Circuit Programmer"
+	#define JOB_ALT_RESEARCH_CONTRACTOR "Research Contractor"
 
 #define JOB_XENOBIOLOGIST "Xenobiologist"
 	// Xenobiologist alt titles
@@ -292,6 +313,7 @@
 	#define JOB_ALT_ASSEMBLY_TECHNICIAN "Assembly Technician"
 	#define JOB_ALT_BIOMECHANICAL_ENGINEER "Biomechanical Engineer"
 	#define JOB_ALT_MECHATRONIC_ENGINEER "Mechatronic Engineer"
+	#define JOB_ALT_SOFTWARE_ENGINEER "Software Engineer"
 
 #define JOB_XENOBOTANIST "Xenobotanist"
 	// Xenobotanist alt titles
@@ -320,6 +342,7 @@
 	#define JOB_ALT_SECURITY_DEPUTY "Security Deputy"
 	#define JOB_ALT_JUNIOR_OFFICER "Junior Officer"
 	#define JOB_ALT_SECURITY_CONTRACTOR "Security Contractor"
+	#define JOB_ALT_LOSS_PREVENTION "Loss Prevention Officer"
 //___________________________________________________________
 
 
@@ -345,7 +368,7 @@
 //___________________________________________________________
 
 
-// Talom jobs
+// Talon jobs
 #define JOB_TALON_CAPTAIN "Talon Captain"
 	// Talon Captain alt titles
 	#define JOB_ALT_TALON_COMMANDER "Talon Commander"
@@ -383,7 +406,7 @@
 #define JOB_ARTIFICER "Artificer"
 #define JOB_WRAITH "Wraith"
 #define JOB_JUGGERNAUT "Juggernaut"
-#define JOB_MODE = "MODE"
+#define JOB_MODE "MODE"
 #define JOB_DISEMBODIED_VOICE "Disembodied Voice"
 #define JOB_ALIEN "Alien"
 #define JOB_GOLEM "Golem"
@@ -417,3 +440,94 @@
 #define JOB_XENOMORPH "Xenomorph"
 #define JOB_BORER "Borer"
 #define JOB_EMERGENCY_RESPONSE_TEAM "Emergency Response Team"
+#define JOB_MAINT_LURKER "Maintenance Lurker"
+
+#define DEPARTMENT_BITFLAG_SECURITY (1<<0)
+#define DEPARTMENT_BITFLAG_COMMAND (1<<1)
+#define DEPARTMENT_BITFLAG_SERVICE (1<<2)
+#define DEPARTMENT_BITFLAG_CARGO (1<<3)
+#define DEPARTMENT_BITFLAG_ENGINEERING (1<<4)
+#define DEPARTMENT_BITFLAG_SCIENCE (1<<5)
+#define DEPARTMENT_BITFLAG_MEDICAL (1<<6)
+#define DEPARTMENT_BITFLAG_SILICON (1<<7)
+#define DEPARTMENT_BITFLAG_ASSISTANT (1<<8)
+#define DEPARTMENT_BITFLAG_CAPTAIN (1<<9)
+
+// Jobflags by Department
+#define ENGSEC (1<<0)
+
+#define CAPTAIN (1<<0)
+#define HOS (1<<1)
+#define WARDEN (1<<2)
+#define DETECTIVE (1<<3)
+#define OFFICER (1<<4)
+#define CHIEF (1<<5)
+#define ENGINEER (1<<6)
+#define ATMOSTECH (1<<7)
+#define AI_DEPT (1<<8)
+#define CYBORG (1<<9)
+#define TCOMMS (1<<12)
+#define CLOWN (1<<13)
+#define MIME (1<<14)
+#define INTERN (1<<15)
+
+#define MEDSCI (1<<1)
+
+#define RD (1<<0)
+#define SCIENTIST (1<<1)
+#define CHEMIST (1<<2)
+#define CMO (1<<3)
+#define DOCTOR (1<<4)
+#define GENETICIST (1<<5)
+#define VIROLOGIST (1<<6)
+#define PSYCHIATRIST (1<<7)
+#define ROBOTICIST (1<<8)
+#define XENOBIOLOGIST (1<<9)
+#define PARAMEDIC (1<<10)
+#define PATHFINDER (1<<11)
+#define EXPLORER (1<<12)
+#define SAR (1<<13)
+#define XENOBOTANIST (1<<14)
+
+#define CIVILIAN (1<<2)
+
+#define HOP (1<<0)
+#define BARTENDER (1<<1)
+#define BOTANIST (1<<2)
+#define CHEF (1<<3)
+#define JANITOR (1<<4)
+#define LIBRARIAN (1<<5)
+#define QUARTERMASTER (1<<6)
+#define CARGOTECH (1<<7)
+#define MINER (1<<8)
+#define LAWYER (1<<9)
+#define CHAPLAIN (1<<10)
+#define ASSISTANT (1<<11)
+#define BRIDGE (1<<12)
+#define PILOT (1<<13)
+#define ENTERTAINER (1<<14)
+#define ENTREPRENEUR (1<<15)
+
+#define OTHER (1<<10) //VOREStation Note: Unused on VS. Used downstream.
+#define NONCREW (1<<0)
+#define ANOMALY (1<<0) //VOREStation Note: Unused on VS. Used downstream.
+
+#define TALON (1<<3)
+
+#define TALCAP (1<<0)
+#define TALPIL (1<<1)
+#define TALDOC (1<<2)
+#define TALSEC (1<<3)
+#define TALENG (1<<4)
+#define TALMIN (1<<5)
+
+GLOBAL_LIST_INIT(command_positions, list(
+	JOB_SITE_MANAGER,
+	JOB_HEAD_OF_PERSONNEL,
+	JOB_HEAD_OF_SECURITY,
+	JOB_CHIEF_ENGINEER,
+	JOB_RESEARCH_DIRECTOR,
+	JOB_CHIEF_MEDICAL_OFFICER,
+	JOB_COMMAND_SECRETARY
+	//JOB_BLUESHIELD_GUARD
+))

@@ -1,15 +1,13 @@
-/obj/item/weapon/research_sample
+/obj/item/research_sample
 	name = "research sample"
-	desc = "A curious sample of unknown material. Destructive analysis might yield scientific advances. Alternatively, it may be possible to stabilize it to yield useful resources instead.<br/><span class='warning'>It looks dangerous to handle without heavy gloves or other protective equipment.</span>"
+	desc = "A curious sample of unknown material. It may be possible to stabilize it to yield useful resources, or it could be shipped back to Central for research purposes.<br/>" + span_warning("It looks dangerous to handle without heavy gloves or other protective equipment.")
 	icon = 'icons/obj/samples.dmi'
 	icon_state = "sample"
 	w_class = ITEMSIZE_TINY
 	var/tech_level = 0	//base level
 	var/rand_level = 0	//random level between 0 and this value is added during spawn, if the techgroup is randomized
-	var/fixed_tech = null	//do we have a predetermined tech-group, per request? if so, overrides randomization for icon and name
-	var/rand_tech = null	//randomized tech-group from the list below
-	var/list/valid_techs = list(TECH_COMBAT,TECH_MAGNET,TECH_POWER,TECH_BIO,TECH_DATA,TECH_ENGINEERING,TECH_PHORON,TECH_MATERIAL,TECH_BLUESPACE,TECH_ILLEGAL,TECH_ARCANE,TECH_PRECURSOR)
-	origin_tech = list()	//blank list creation, or else we get a runtime trying to assign the new techgroup
+	var/supply_value = 5
+	var/fixed_name = FALSE
 
 	persist_storable = FALSE //don't shove hazardous shinies into the item bank!! also their properties are (usually) randomized on creation, so saving them is pointless-- you won't get out what you put in
 
@@ -22,17 +20,14 @@
 	//resource returns when crunched; a small amount of OK stuff by default
 	var/min_ore			= 3
 	var/max_ore			= 5
-	var/list/resource_list	=	list(/obj/item/weapon/ore/glass,/obj/item/weapon/ore/coal,/obj/item/weapon/ore/iron,/obj/item/weapon/ore/lead,/obj/item/weapon/ore/marble,/obj/item/weapon/ore/phoron,/obj/item/weapon/ore/silver,/obj/item/weapon/ore/gold)
+	var/list/resource_list	=	list(/obj/item/ore/glass,/obj/item/ore/coal,/obj/item/ore/iron,/obj/item/ore/lead,/obj/item/ore/marble,/obj/item/ore/phoron,/obj/item/ore/silver,/obj/item/ore/gold)
 
-/obj/item/weapon/research_sample/New()
-	var/tech_mod = rand(0,rand_level)
-	var/tech_value = tech_level+tech_mod
-	if(fixed_tech)
-		origin_tech.Add(list("[fixed_tech]" = tech_value))
-	else	//if we're not a preset, randomize the name, icon, and associated tech, to make sure samples aren't predictable/metagamable
+/obj/item/research_sample/Initialize(mapload)
+	. = ..()
+	if(!fixed_name)
 		var/name_prefix = "[pick("strange","anomalous","exotic","atypical","unusual","incongruous","weird","aberrant","eccentric")]"
 		var/name_suffix		//blank because it's randomized per sample appearance
-		var/sample_icon = rand(1,10)
+		var/sample_icon = rand(1,11)
 		icon_state = "generic_sample[sample_icon]"
 		damage_type = pick("BRUTE","BURN","TOX","OXY","EMP","PAIN")
 		//per-state tweaks, like glows/light emission or narrower valid tech defs, if desired
@@ -60,17 +55,16 @@
 			else	//none
 				name_suffix = "[pick("object","sample","thing","fragment","specimen","element","alloy","chunk","remnant","scrap","sliver")]"
 		name = "[name_prefix] [name_suffix]"
-		rand_tech = pick(valid_techs)	//assign techs last
-		origin_tech.Add(list("[rand_tech]" = tech_value))
+	AddElement(/datum/element/sellable/research_sample)
 
-/obj/item/weapon/research_sample/attack_hand(mob/user)
+/obj/item/research_sample/attack_hand(mob/user)
 	. = ..()
 	var/mob/living/M = user
 	if(!istype(M))
 		return
 
 	var/burn_user = TRUE
-	if(istype(M, /mob/living/carbon/human))
+	if(ishuman(M))
 		var/mob/living/carbon/human/H = user
 		var/obj/item/clothing/gloves/G = H.gloves
 		var/obj/item/clothing/suit/S = H.wear_suit
@@ -86,48 +80,51 @@
 		if(burn_user)
 			switch(damage_type)
 				if("BRUTE")
-					H.visible_message("<span class='danger'>\The [src] creaks as it ravages [H]'s hands!</span>")
-					H.apply_damage(rand(min_damage,max_damage), BRUTE, "r_hand", used_weapon="Anomalous Material")
-					H.apply_damage(rand(min_damage,max_damage), BRUTE, "l_hand", used_weapon="Anomalous Material")
+					H.visible_message(span_danger("\The [src] creaks as it ravages [H]'s hands!"))
+					H.apply_damage(rand(min_damage,max_damage), BRUTE, BP_R_HAND, used_weapon=src)
+					H.apply_damage(rand(min_damage,max_damage), BRUTE, BP_L_HAND, used_weapon=src)
 				if("BURN")
-					H.visible_message("<span class='danger'>\The [src] flashes as it scorches [H]'s hands!</span>")
-					H.apply_damage(rand(min_damage,max_damage), BURN, "r_hand", used_weapon="Anomalous Material")
-					H.apply_damage(rand(min_damage,max_damage), BURN, "l_hand", used_weapon="Anomalous Material")
+					H.visible_message(span_danger("\The [src] flashes as it scorches [H]'s hands!"))
+					H.apply_damage(rand(min_damage,max_damage), BURN, BP_R_HAND, used_weapon=src)
+					H.apply_damage(rand(min_damage,max_damage), BURN, BP_L_HAND, used_weapon=src)
 				if("TOX")
-					H.visible_message("<span class='danger'>\The [src] seethes and hisses like burning acid!</span>")
+					H.visible_message(span_danger("\The [src] seethes and hisses like burning acid!"))
 					if(!H.isSynthetic())
-						to_chat(user,"<span class='danger'>A wave of nausea washes over you!</span>")
+						to_chat(user,span_danger("A wave of nausea washes over you!"))
 						H.adjustToxLoss(rand(min_damage,max_damage)+rand(min_damage,max_damage))
 				if("OXY")
-					H.visible_message("<span class='danger'>\The [src] seems to draw something into itself!</span>")
+					H.visible_message(span_danger("\The [src] seems to draw something into itself!"))
 					if(!H.isSynthetic())
-						to_chat(user,"<span class='danger'>You feel dizzy and short of breath!</span>")
+						to_chat(user,span_danger("You feel dizzy and short of breath!"))
 						H.adjustOxyLoss(rand(min_damage,max_damage)+rand(min_damage,max_damage))
 				if("EMP")
-					H.visible_message("<span class='danger'>\The [src] ripples and distorts, emitting some kind of pulse!</span>")
+					H.visible_message(span_danger("\The [src] ripples and distorts, emitting some kind of pulse!"))
 					empulse(H,0,1,1,1)
 				if("PAIN")
-					H.visible_message("<span class='danger'>\The [src] flashes with coruscating energy!</span>")
-					to_chat(user,"<span class='danger'>Blinding pain assails your senses!</span>")
+					H.visible_message(span_danger("\The [src] flashes with coruscating energy!"))
+					to_chat(user,span_danger("Blinding pain assails your senses!"))
 					H.adjustHalLoss(rand(min_damage,max_damage)*5)
 				else
-					H.visible_message("<span class='notice'>\The [src] flickers with kaleidoscopic light. You should report this to someone immediately.</span>")
+					H.visible_message(span_notice("\The [src] flickers with kaleidoscopic light. You should report this to someone immediately."))
 			H.drop_from_inventory(src, get_turf(H))
 			return
 
-	if(istype(user, /mob/living/silicon/robot))
+	if(isrobot(user))
 		burn_user = FALSE
 
 	if(burn_user)
-		M.apply_damage(rand(min_damage,max_damage), BURN, null, used_weapon="Anomalous Material")
+		M.apply_damage(rand(min_damage,max_damage), BURN, null, used_weapon=src)
 
-/obj/item/weapon/research_sample/attack_self(mob/user)
+/obj/item/research_sample/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	var/mob/living/M = user
 	if(!istype(M))
 		return
 
 	var/burn_user = TRUE
-	if(istype(M, /mob/living/carbon/human))
+	if(ishuman(M))
 		var/mob/living/carbon/human/H = user
 		var/obj/item/clothing/gloves/G = H.gloves
 		var/obj/item/clothing/suit/S = H.wear_suit
@@ -143,37 +140,37 @@
 		if(burn_user)
 			switch(damage_type)
 				if("BRUTE")
-					H.visible_message("<span class='danger'>\The [src] creaks as it ravages [H]'s hands!</span>")
-					H.apply_damage(rand(min_damage,max_damage), BRUTE, "r_hand", used_weapon="Anomalous Material")
-					H.apply_damage(rand(min_damage,max_damage), BRUTE, "l_hand", used_weapon="Anomalous Material")
+					H.visible_message(span_danger("\The [src] creaks as it ravages [H]'s hands!"))
+					H.apply_damage(rand(min_damage,max_damage), BRUTE, BP_R_HAND, used_weapon=src)
+					H.apply_damage(rand(min_damage,max_damage), BRUTE, BP_L_HAND, used_weapon=src)
 				if("BURN")
-					H.visible_message("<span class='danger'>\The [src] flashes as it scorches [H]'s hands!</span>")
-					H.apply_damage(rand(min_damage,max_damage), BURN, "r_hand", used_weapon="Anomalous Material")
-					H.apply_damage(rand(min_damage,max_damage), BURN, "l_hand", used_weapon="Anomalous Material")
+					H.visible_message(span_danger("\The [src] flashes as it scorches [H]'s hands!"))
+					H.apply_damage(rand(min_damage,max_damage), BURN, BP_R_HAND, used_weapon=src)
+					H.apply_damage(rand(min_damage,max_damage), BURN, BP_L_HAND, used_weapon=src)
 				if("TOX")
-					H.visible_message("<span class='danger'>\The [src] seethes and hisses like burning acid!</span>")
+					H.visible_message(span_danger("\The [src] seethes and hisses like burning acid!"))
 					if(!H.isSynthetic())
-						to_chat(user,"<span class='danger'>A wave of nausea washes over you!</span>")
+						to_chat(user,span_danger("A wave of nausea washes over you!"))
 						H.adjustToxLoss(rand(min_damage,max_damage)+rand(min_damage,max_damage))
 				if("OXY")
-					H.visible_message("<span class='danger'>\The [src] seems to draw something into itself!</span>")
+					H.visible_message(span_danger("\The [src] seems to draw something into itself!"))
 					if(!H.isSynthetic())
-						to_chat(user,"<span class='danger'>You feel dizzy and short of breath!</span>")
+						to_chat(user,span_danger("You feel dizzy and short of breath!"))
 						H.adjustOxyLoss(rand(min_damage,max_damage)+rand(min_damage,max_damage))
 				if("EMP")
-					H.visible_message("<span class='danger'>\The [src] ripples and distorts, emitting some kind of pulse!</span>")
+					H.visible_message(span_danger("\The [src] ripples and distorts, emitting some kind of pulse!"))
 					empulse(H,0,1,1,1)
 				if("PAIN")
-					H.visible_message("<span class='danger'>\The [src] flashes with coruscating energy!</span>")
-					to_chat(user,"<span class='danger'>Blinding pain assails your senses!</span>")
+					H.visible_message(span_danger("\The [src] flashes with coruscating energy!"))
+					to_chat(user,span_danger("Blinding pain assails your senses!"))
 					H.adjustHalLoss(rand(min_damage,max_damage)*5)
 				else
-					H.visible_message("<span class='notice'>\The [src] flickers with kaleidoscopic light. You should report this to someone immediately.</span>")
+					H.visible_message(span_notice("\The [src] flickers with kaleidoscopic light. You should report this to someone immediately."))
 			H.drop_from_inventory(src, get_turf(H))
 			return
 
-		else if(do_after(user,3 SECONDS))	//short delay, so you can abort/cancel if you misclick
-			H.visible_message("<span class='notice'>[H] crushes \the [src], stabilizing its anomalous properties and rendering it into a pile of assorted minerals.</span>")
+		else if(do_after(user, 3 SECONDS, target = src))	//short delay, so you can abort/cancel if you misclick
+			H.visible_message(span_notice("[H] crushes \the [src], stabilizing its anomalous properties and rendering it into a pile of assorted minerals."))
 			var/i = rand(min_ore,max_ore)
 			while(i>1)
 				var/ore = pick(resource_list)
@@ -182,37 +179,32 @@
 			H.drop_from_inventory(src,get_turf(H))
 			qdel(src)
 
-	if(istype(user, /mob/living/silicon/robot))
+	if(isrobot(user))
 		burn_user = FALSE
 
 	if(burn_user)
-		M.apply_damage(rand(min_damage,max_damage), BURN, null, used_weapon="Anomalous Material")
+		M.apply_damage(rand(min_damage,max_damage), BURN, null, used_weapon=src)
 
-/obj/item/weapon/research_sample/attackby(obj/item/weapon/P as obj, mob/user as mob)
+/obj/item/research_sample/attackby(obj/item/P as obj, mob/user as mob)
 	..()
 
-	if(istype(P, /obj/item/weapon/storage/sample_container))
-		var/obj/item/weapon/storage/sample_container/SC = P
-		src.loc = SC
-		SC.update_icon()
-		to_chat(user, "<span class='notice'>You store \the [src] in \the [SC].</span>")
+	if(istype(P, /obj/item/storage/sample_container))
+		var/obj/item/storage/sample_container/SC = P
+		if(SC.contents.len >= SC.max_storage_space)
+			to_chat(user, span_notice("\The [SC] is full!"))
+			return
+		else
+			src.loc = SC
+			SC.update_icon()
+			to_chat(user, span_notice("You store \the [src] in \the [SC]."))
 
-	if(istype(P, /obj/item/device/cataloguer))
-		to_chat(user, "<span class='notice'>You start to scan \the [src] with \the [P]...</span>")
-		if(do_after(user, 2 SECONDS))
-			to_chat(user, "<span class='notice'>\The [src] seems to have [origin_tech[1]] properties?</span>")
-
-/obj/item/weapon/research_sample/common
-	tech_level = 2 //2~3
-	rand_level = 1
-	valid_techs = list(TECH_COMBAT,TECH_MAGNET,TECH_POWER,TECH_BIO,TECH_DATA,TECH_ENGINEERING,TECH_PHORON,TECH_MATERIAL)
+/obj/item/research_sample/common
 	catalogue_data = list(/datum/category_item/catalogue/information/research_sample/common)
+	supply_value = 15
 
-/obj/item/weapon/research_sample/uncommon
-	tech_level = 4 //4~6
-	rand_level = 2
-	valid_techs = list(TECH_COMBAT,TECH_MAGNET,TECH_POWER,TECH_BIO,TECH_DATA,TECH_ENGINEERING,TECH_PHORON,TECH_MATERIAL,TECH_BLUESPACE,TECH_ILLEGAL)
+/obj/item/research_sample/uncommon
 	catalogue_data = list(/datum/category_item/catalogue/information/research_sample/uncommon)
+	supply_value = 35
 
 	handle_risk		= 50
 	min_damage		= 4
@@ -221,13 +213,11 @@
 	//modest amount of decent stuff
 	min_ore			= 4
 	max_ore			= 6
-	resource_list	= list(/obj/item/weapon/ore/phoron,/obj/item/weapon/ore/silver,/obj/item/weapon/ore/gold,/obj/item/weapon/ore/osmium,/obj/item/weapon/ore/diamond)
+	resource_list	= list(/obj/item/ore/phoron,/obj/item/ore/silver,/obj/item/ore/gold,/obj/item/ore/osmium,/obj/item/ore/diamond)
 
-/obj/item/weapon/research_sample/rare
-	tech_level = 6 //6~8
-	rand_level = 2
-	valid_techs = list(TECH_COMBAT,TECH_MAGNET,TECH_POWER,TECH_BIO,TECH_DATA,TECH_ENGINEERING,TECH_PHORON,TECH_MATERIAL,TECH_BLUESPACE,TECH_ILLEGAL,TECH_ARCANE,TECH_PRECURSOR)
+/obj/item/research_sample/rare
 	catalogue_data = list(/datum/category_item/catalogue/information/research_sample/rare)
+	supply_value = 75
 
 	handle_risk		= 80
 	min_damage		= 5
@@ -236,17 +226,16 @@
 	//a decent amount of rare stuff only
 	min_ore			= 8
 	max_ore			= 10
-	resource_list	=	list(/obj/item/weapon/ore/osmium,/obj/item/weapon/ore/uranium,/obj/item/weapon/ore/hydrogen,/obj/item/weapon/ore/diamond,/obj/item/weapon/ore/verdantium)
+	resource_list	=	list(/obj/item/ore/osmium,/obj/item/ore/uranium,/obj/item/ore/hydrogen,/obj/item/ore/diamond,/obj/item/ore/verdantium)
 
-/obj/item/weapon/research_sample/bluespace
+/obj/item/research_sample/bluespace
 	name = "bluespace anomaly"
 	desc = "A small, solidified fragment of bluespace? It shimmers in and out of phase with reality, flickering ominously."
 	icon_state = "sample_bluespace"
-	tech_level = 6 //always 6
-	rand_level = 0
-	fixed_tech = TECH_BLUESPACE
+	fixed_name = TRUE
 	var/lightcolor = "#0066CC"
 	catalogue_data = list(/datum/category_item/catalogue/information/research_sample/bluespace)
+	supply_value = 100
 
 	handle_risk		= 80
 	min_damage		= 5
@@ -255,10 +244,10 @@
 	//a single bluespace crystal
 	min_ore			= 1
 	max_ore			= 1
-	resource_list	=	list(/obj/item/weapon/bluespace_crystal)
+	resource_list	=	list(/obj/item/bluespace_crystal)
 
-/obj/item/weapon/research_sample/bluespace/New()
-	..()
+/obj/item/research_sample/bluespace/Initialize(mapload)
+	. = ..()
 	set_light(1, 3, lightcolor)
 
 //catalogue data
@@ -304,9 +293,9 @@
 	icon_state = "sample_spawner1"
 
 /obj/random/research_sample_type1/item_to_spawn()
-	return pick(prob(50);/obj/item/weapon/research_sample/common,
-				prob(35);/obj/item/weapon/research_sample/uncommon,
-				prob(15);/obj/item/weapon/research_sample/rare)
+	return pick(prob(50);/obj/item/research_sample/common,
+				prob(35);/obj/item/research_sample/uncommon,
+				prob(15);/obj/item/research_sample/rare)
 
 /obj/random/research_sample_type2
 	name = "Random Common/Uncommon Research Sample"
@@ -315,8 +304,8 @@
 	icon_state = "sample_spawner2"
 
 /obj/random/research_sample_type2/item_to_spawn()
-	return pick(prob(70);/obj/item/weapon/research_sample/common,
-				prob(30);/obj/item/weapon/research_sample/uncommon)
+	return pick(prob(70);/obj/item/research_sample/common,
+				prob(30);/obj/item/research_sample/uncommon)
 
 /obj/random/research_sample_type3
 	name = "Random Uncommon/Rare Research Sample"
@@ -325,5 +314,5 @@
 	icon_state = "sample_spawner3"
 
 /obj/random/research_sample_type3/item_to_spawn()
-	return pick(prob(70);/obj/item/weapon/research_sample/uncommon,
-				prob(30);/obj/item/weapon/research_sample/rare)
+	return pick(prob(70);/obj/item/research_sample/uncommon,
+				prob(30);/obj/item/research_sample/rare)

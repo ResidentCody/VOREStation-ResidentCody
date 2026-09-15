@@ -1,14 +1,14 @@
 //Items for the entrepreneurs
 
-/obj/item/weapon/entrepreneur
+/obj/item/entrepreneur
 	name = "crystal ball"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "crystal_ball"
 	desc = "A perfect sphere that is partially translucent, allowing one to see into it's mysterious depths."
 
-/obj/item/weapon/entrepreneur/crystal_ball
+/obj/item/entrepreneur/crystal_ball
 
-/obj/item/weapon/entrepreneur/horoscope
+/obj/item/entrepreneur/horoscope
 	name = "horoscope book"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "horoscope"
@@ -123,7 +123,7 @@
 	var/pisces = ""
 	var/list/zodiacs = list("aries","taurus","gemini","cancer","leo","virgo","libra","scorpio","sagittarius","capricorn","aquarius","pisces")
 
-/obj/item/weapon/entrepreneur/horoscope/Initialize()
+/obj/item/entrepreneur/horoscope/Initialize(mapload)
 	. = ..()
 	var/stars = pick(stars_list)
 	var/prediction = pick(prediction_list)
@@ -185,154 +185,218 @@
 	advice = pick(advice_list)
 	pisces = "[stars] [prediction] [advice]"
 
-/obj/item/weapon/entrepreneur/horoscope/attack_self(var/mob/user)
+/obj/item/entrepreneur/horoscope/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	var/zodiac = tgui_input_list(user, "Which of todays zodiacs do you want to read?", "Zodiac", zodiacs)
 	if(zodiac)
 		switch(zodiac)
 			if("aries")
-				to_chat(user, "<span class='notice'>Today's reading for Aries: [aries]</span>")
+				to_chat(user, span_notice("Today's reading for Aries: [aries]"))
 			if("taurus")
-				to_chat(user, "<span class='notice'>Today's reading for Taurus: [taurus]</span>")
+				to_chat(user, span_notice("Today's reading for Taurus: [taurus]"))
 			if("gemini")
-				to_chat(user, "<span class='notice'>Today's reading for Gemini: [gemini]</span>")
+				to_chat(user, span_notice("Today's reading for Gemini: [gemini]"))
 			if("cancer")
-				to_chat(user, "<span class='notice'>Today's reading for Cancer: [cancer]</span>")
+				to_chat(user, span_notice("Today's reading for Cancer: [cancer]"))
 			if("leo")
-				to_chat(user, "<span class='notice'>Today's reading for Leo: [leo]</span>")
+				to_chat(user, span_notice("Today's reading for Leo: [leo]"))
 			if("virgo")
-				to_chat(user, "<span class='notice'>Today's reading for Virgo: [virgo]</span>")
+				to_chat(user, span_notice("Today's reading for Virgo: [virgo]"))
 			if("libra")
-				to_chat(user, "<span class='notice'>Today's reading for Libra: [libra]</span>")
+				to_chat(user, span_notice("Today's reading for Libra: [libra]"))
 			if("scorpio")
-				to_chat(user, "<span class='notice'>Today's reading for Scorpio: [scorpio]</span>")
+				to_chat(user, span_notice("Today's reading for Scorpio: [scorpio]"))
 			if("sagittarius")
-				to_chat(user, "<span class='notice'>Today's reading for Sagittarius: [sagittarius]</span>")
+				to_chat(user, span_notice("Today's reading for Sagittarius: [sagittarius]"))
 			if("capricorn")
-				to_chat(user, "<span class='notice'>Today's reading for Capricorn: [capricorn]</span>")
+				to_chat(user, span_notice("Today's reading for Capricorn: [capricorn]"))
 			if("aquarius")
-				to_chat(user, "<span class='notice'>Today's reading for Aquarius: [aquarius]</span>")
+				to_chat(user, span_notice("Today's reading for Aquarius: [aquarius]"))
 			if("pisces")
-				to_chat(user, "<span class='notice'>Today's reading for Pisces: [pisces]</span>")
+				to_chat(user, span_notice("Today's reading for Pisces: [pisces]"))
 
 ///////Dentist tools, basically just fluff for RP
 
-/obj/item/weapon/entrepreneur/dentist_mirror
+/obj/item/entrepreneur/dentist_mirror
 	name = "dental mirror"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "mirror"
 	desc = "A small mirror at the end of a short, stainless steel rod."
 	w_class = ITEMSIZE_TINY
 
-/obj/item/weapon/entrepreneur/dentist_mirror/attack(mob/M, mob/user)
+/obj/item/entrepreneur/dentist_mirror/attack(mob/living/M, mob/living/user, target_zone, attack_modifier)
 	if(user.a_intent == I_HELP)	//A tad messy, but this should stop people from smacking their patients in surgery
-		to_chat(user, "<span class='notice'>You use the mirror to get a good look inside of [M]'s mouth.</span>")
-		to_chat(M, "<span class='notice'>[user] uses a small mirror to look inside of your mouth.</span>")
-		return 0
+		to_chat(user, span_notice("You use the mirror to get a good look inside of [M]'s mouth."))
+		to_chat(M, span_notice("[user] uses a small mirror to look inside of your mouth."))
+		return ITEM_INTERACT_SUCCESS
 	..()
 
-/obj/item/weapon/entrepreneur/dentist_probe
+/obj/item/entrepreneur/dentist_probe
 	name = "dental probe"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "probe"
 	desc = "A short stainless steel rod that ends with a narrow pointy bit for poking."
 	w_class = ITEMSIZE_TINY
 
-/obj/item/weapon/entrepreneur/dentist_probe/attack(mob/M, mob/user)
+/obj/item/entrepreneur/dentist_probe/attack(mob/living/M, mob/living/user, target_zone, attack_modifier)
 	if(user.a_intent == I_HELP)	//A tad messy, but this should stop people from smacking their patients in surgery
-		to_chat(user, "<span class='notice'>You use the probe to poke about inside of [M]'s mouth.</span>")
-		to_chat(M, "<span class='notice'>[user] examines the inside of your mouth with a sharp probe, it hurts a little being prodded.</span>")
-		return 0
+		to_chat(user, span_notice("You use the probe to poke about inside of [M]'s mouth."))
+		to_chat(M, span_notice("[user] examines the inside of your mouth with a sharp probe, it hurts a little being prodded."))
+		return ITEM_INTERACT_SUCCESS
 	..()
 
-/obj/item/weapon/entrepreneur/dentist_sickle
+/obj/item/entrepreneur/dentist_sickle
 	name = "dental sickle"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "sickle"
 	desc = "A narrow, sharp hook at the end of a short, stainless steel rod."
 	w_class = ITEMSIZE_TINY
 
-/obj/item/weapon/entrepreneur/dentist_sickle/attack(mob/M, mob/user)
+/obj/item/entrepreneur/dentist_sickle/attack(mob/living/M, mob/living/user, target_zone, attack_modifier)
 	if(user.a_intent == I_HELP)	//A tad messy, but this should stop people from smacking their patients in surgery
-		to_chat(user, "<span class='notice'>You loosen some stuck debris from [M]'s mouth with the hook.</span>")
-		to_chat(M, "<span class='notice'>[user] uses a hook to scrape out something stuck in your mouth, it's pretty uncomfortable.</span>")
-		return 0
+		to_chat(user, span_notice("You loosen some stuck debris from [M]'s mouth with the hook."))
+		to_chat(M, span_notice("[user] uses a hook to scrape out something stuck in your mouth, it's pretty uncomfortable."))
+		return ITEM_INTERACT_SUCCESS
 	..()
 
-/obj/item/weapon/entrepreneur/dentist_scaler
+/obj/item/entrepreneur/dentist_scaler
 	name = "dental scaler"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "scaler"
 	desc = "A flat and thin scraper at the end of a short, stainless steel rod."
 	w_class = ITEMSIZE_TINY
 
-/obj/item/weapon/entrepreneur/dentist_scaler/attack(mob/M, mob/user)
+/obj/item/entrepreneur/dentist_scaler/attack(mob/living/M, mob/living/user, target_zone, attack_modifier)
 	if(user.a_intent == I_HELP)	//A tad messy, but this should stop people from smacking their patients in surgery
-		to_chat(user, "<span class='notice'>You scrape debris out from [M]'s mouth.</span>")
-		to_chat(M, "<span class='notice'>[user] scrapes debris from out of your mouth.</span>")
-		return 0
+		to_chat(user, span_notice("You scrape debris out from [M]'s mouth."))
+		to_chat(M, span_notice("[user] scrapes debris from out of your mouth."))
+		return ITEM_INTERACT_SUCCESS
 	..()
 
 ////// Exercise mat, yoga and trainer stuff
 
-/obj/item/weapon/bedsheet/pillow/exercise
+/obj/item/bedsheet/pillow/exercise
 	name = "exercise mat"
 	desc = "A thick, flexible but tough mat designed for people to exercise on."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "exercise_mat"
 
-/obj/item/weapon/bedsheet/pillow/exercise/attackby(var/obj/item/component, mob/user as mob)
+/obj/item/bedsheet/pillow/exercise/attackby(obj/item/component, mob/user as mob)
 	return
 
-/obj/item/weapon/entrepreneur/dumbbell
+/obj/item/entrepreneur/dumbbell
 	name = "dumbbell"
 	desc = "A small but heavy pair of weights connected by a bar, desgined to be held in one hand."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "dumbbell"
 
-/obj/item/weapon/entrepreneur/dumbbell/attack_self(var/mob/user)
+/obj/item/entrepreneur/dumbbell/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
 	var/mob/living/M = user
 	if(M.nutrition <= 100)
-		to_chat(user, "<span class='notice'>You are too hungry to exercise right now.</span>")
+		to_chat(user, span_notice("You are too hungry to exercise right now."))
 		return 0
-	if(!do_after(user, 3 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
+	if(!do_after(user, 3 SECONDS, target = src))
 		return 0
 	M.adjust_nutrition(-10)
-	to_chat(user, "<span class='notice'>You successfully perform a [src] exercise!</span>")
+	to_chat(user, span_notice("You successfully perform a [src] exercise!"))
 	if(M.weight > 50)
 		M.weight -= 0.5
 
 //////Paranormal Investigator stuff
 
-/obj/item/weapon/entrepreneur/emf
+/obj/item/entrepreneur/emf
 	name = "EMF scanner"
 	desc = "A handheld device used for detecting disturbances to electromagnetic fields."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "emf"
 	var/emf = 5
-	var/turf/last_used = 0
+	///If our scanner will accurately detect ghosts or not.
+	var/advanced = FALSE
+	///How far our we search. 0 = own turf.
+	var/detection_range = 0
+
+	///How often we can use the EMF actively.
+	COOLDOWN_DECLARE(scan_cooldown)
+
+/obj/item/entrepreneur/emf/examine(mob/user)
+	. = ..()
+	switch(emf)
+		if(-1000 to 20)
+			. += span_info("The EMF reader is very low, reading [emf]mG.")
+		if(20 to 40)
+			. += span_info("The EMF reader is low, reading [emf]mG.")
+		if(40 to 60)
+			. += span_info(span_red("The EMF reader is reading moderate interference, reading [emf]mG."))
+		if(60 to 80)
+			. += span_info(span_red("The EMF reader is reading high interference, reading [emf]mG."))
+		if(80 to 1000)
+			. += span_info(span_red("The EMF reader is reading extremely high interference, reading [emf]mG."))
+
+/obj/item/entrepreneur/emf/Initialize(mapload)
+	. = ..()
+	emf = rand(1,100)
+	START_PROCESSING(SSobj, src)
+
+/obj/item/entrepreneur/emf/process()
+	search_for_ghosts()
+
+/obj/item/entrepreneur/emf/attack_self(mob/user)
+	. = ..(user)
+	if(.)
+		return TRUE
+	if(COOLDOWN_FINISHED(src, scan_cooldown))
+		search_for_ghosts(user)
+	else
+		to_chat(user, span_warning("Your EMF scanner is recharging. The current reading is [emf]mG."))
+
+/obj/item/entrepreneur/emf/proc/search_for_ghosts(mob/user)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return
+
+	///How many ghosts are around us.
+	var/ghosts_present = 0
+	///How much we'll increase/decrease the EMF reading.
 	var/emf_change = 0
 
-/obj/item/weapon/entrepreneur/emf/attack_self(var/mob/user)
-	if(!last_used)
-		emf = rand(1,100)
-		last_used = get_turf(user)
-	var/current_used = get_turf(user)
-	var/mob/observer/spooky = locate() in current_used
-	if(last_used != current_used)
-		if(emf >= 100)
-			emf = 100
-		if(emf <= 20)
-			emf = 20
-		if(spooky)
+	//Loop for the 'advanced' emfs, which detect actual ghosts/phasers.
+	if(advanced)
+		for(var/mob/entity in range(detection_range, our_turf))
+			if(isobserver(entity))
+				var/mob/observer/dead/ghost = entity
+				if(ghost.following || !ghost.interact_with_world || ghost.admin_ghosted) //Ghosts orbiting us or someone else, or have opted out of interactions.
+					continue
+				ghosts_present++
+			if(entity.is_incorporeal())
+				ghosts_present++
+
+	if(emf >= 100)
+		emf = 100
+	if(emf <= 20)
+		emf = 20
+
+	if(ghosts_present)
+		if(advanced)
+			emf_change = rand(3 * ghosts_present, 10 * ghosts_present)
+		else
 			emf_change = rand(-15,20) //Trend upwards but not by enough to prove ghosts actually exist
+	else
+		if(advanced)
+			emf_change = rand(-5, -1)
 		else
 			emf_change = rand(-20,15) //Trend downwards
-		last_used = get_turf(user)
-		emf = (emf + emf_change)
-		update_icon()
-	to_chat(user, "<span class='notice'>You update the EMF scanner and check the reading. It reads [emf]mG!</span>")
+	emf = (emf + emf_change)
+	update_icon()
+	if(user)
+		to_chat(user, span_notice("You update the EMF scanner and check the reading. It reads [emf]mG!"))
+		COOLDOWN_START(src, scan_cooldown, 5 SECONDS)
 
-/obj/item/weapon/entrepreneur/emf/update_icon()
+/obj/item/entrepreneur/emf/update_icon()
 	switch(emf)
 		if(-1000 to 20)
 			icon_state = "emf-0"
@@ -346,68 +410,72 @@
 			icon_state = "emf-80"
 	return
 
-/obj/item/weapon/entrepreneur/spirit_board
+/obj/item/entrepreneur/spirit_board
 	name = "spirit board"
 	desc = "A wooden board with an alphabet at numbers on it, used to contact the dead. You need to use a glass to contact the spirit world. (It can be alt-clicked to decide the next letter in the sequence. This item does not canonise ghosts/souls in this setting, it's just a bit of fun!)"
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "spirit_board"
 	var/list/possible_results = list("A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","Yes","No","1","2","3","4","5","6","7","8","9","0","Nothing")
+	///What the next letter/number will be.
 	var/next_result = 0
+	///If ghosts can interact with it.
 	var/ghost_enabled = 1
+	///If the board will always display what ghosts put
+	var/accurate = FALSE
 
-/obj/item/weapon/entrepreneur/spirit_board/attackby(obj/item/weapon/reagent_containers/food/drinks/W as obj, mob/living/user as mob)
+/obj/item/entrepreneur/spirit_board/attackby(obj/item/reagent_containers/food/drinks/W, mob/living/user)
 	if(!istype(user))
 		return 0
 	if(!istype(W))
-		to_chat(user, "<span class='notice'>You need some sort of glass, bottle or cup to contact the spirit world.</span>")
+		to_chat(user, span_notice("You need some sort of glass, bottle or cup to contact the spirit world."))
 		return 0
 	var/result = 0
-	if(!do_after(user, 3 SECONDS, src, exclusive = TASK_USER_EXCLUSIVE))
+	if(!do_after(user, 3 SECONDS, target = src))
 		return 0
 	if(next_result)
 		result = next_result
 	else
 		result = pick(possible_results)
-	src.visible_message("<span class='notice'>[user] slides the [W] over to [result]!</span>")
+	src.visible_message(span_notice("[user] slides the [W] over to [result]!"))
 	next_result = 0
 
-/obj/item/weapon/entrepreneur/spirit_board/AltClick(mob/living/carbon/user)
+/obj/item/entrepreneur/spirit_board/click_alt(mob/living/carbon/user)
 	if(!istype(user)) //admins can be cheeky
 		return 0
 	next_result = tgui_input_list(user, "What should it land on next?", "Next result", possible_results)
 
-/obj/item/weapon/entrepreneur/spirit_board/attack_ghost(var/mob/observer/dead/user)
+/obj/item/entrepreneur/spirit_board/attack_ghost(mob/observer/dead/user)
 	if(!ghost_enabled)
 		return
 	if(jobban_isbanned(user, JOB_GHOSTROLES))
-		to_chat(user, "<span class='warning'>You cannot interact with this board because you are banned from playing ghost roles.</span>")
+		to_chat(user, span_warning("You cannot interact with this board because you are banned from playing ghost roles."))
 		return
 	next_result = tgui_input_list(user, "What should it land on next?", "Next result", possible_results)
-	if(!is_admin(user)) //admins can bypass this for event stuff
+	if(!is_admin(user) || !accurate) //admins can bypass this for event stuff
 		if(prob(25))
 			next_result = 0 //25% chance for the ghost to fail to manipulate the board
 
 // Spirit Healer stuff
 
-/obj/item/weapon/entrepreneur/crystal
+/obj/item/entrepreneur/crystal
 	name = "healing crystal"
 	desc = "A crystal with a powerful energy, apparantly, and is capable of healing the soul, apparantly."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "crystal_pink"
 	w_class = ITEMSIZE_TINY
 
-/obj/item/weapon/entrepreneur/crystal/Initialize()
+/obj/item/entrepreneur/crystal/Initialize(mapload)
 	. = ..()
 	var/list/colour_choice = list("crystal_pink","crystal_blue","crystal_green","crystal_orange","crystal_dblue","crystal_purple")
 	icon_state = pick(colour_choice)
 	update_icon()
 
-/obj/item/weapon/reagent_containers/glass/bottle/essential_oil
+/obj/item/reagent_containers/glass/bottle/essential_oil
 	name = "essential oils"
 	desc = "A small bottle of various plant extracts said to improve upon a person's health as an alternative form of medicine."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "oil"
-	prefill = list("essential_oil" = 60)
+	prefill = list(REAGENT_ID_ESSENTIALOIL = 60)
 
 // Masseuse
 
@@ -427,13 +495,13 @@
 	rollertype = /obj/item/roller/massage
 	bedtype = /obj/structure/bed/roller/massage
 
-/obj/structure/bed/roller/massage/AltClick(mob/living/carbon/user)
+/obj/structure/bed/roller/massage/click_alt(mob/living/carbon/user)
 	if(anchored)
 		anchored = 0
-		src.visible_message("<span class='notice'>[user] turns the breaks off on the [src]!</span>")
+		src.visible_message(span_notice("[user] turns the breaks off on the [src]!"))
 	else if(!anchored)
 		anchored = 1
-		src.visible_message("<span class='notice'>[user] turns the breaks on for the [src]!</span>")
+		src.visible_message(span_notice("[user] turns the breaks on for the [src]!"))
 
 /obj/structure/bed/roller/massage/buckle_mob(mob/living/M)
 	..()
@@ -441,26 +509,26 @@
 
 //Magnifying glass
 
-/obj/item/weapon/entrepreneur/magnifying_glass
+/obj/item/entrepreneur/magnifying_glass
 	name = "magnifying glass"
 	desc = "A curved lense for looking at things a little closer."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "magnifying_glass"
 	w_class = ITEMSIZE_SMALL
 
-/obj/item/weapon/entrepreneur/magnifying_glass/afterattack(atom/T, mob/living/user as mob)
+/obj/item/entrepreneur/magnifying_glass/afterattack(atom/T, mob/living/user as mob)
 	if(!T.desc)
 		return
-	user.visible_message("<span class='notice'>\The [user] examines the \the [T] with \the [src]!</span>")
-	to_chat(user, "<FONT size=4>[T.desc]</FONT>")
+	user.visible_message(span_notice("\The [user] examines the \the [T] with \the [src]!"))
+	to_chat(user, span_huge("[T.desc]"))
 
 // Streamer and influencer
 
-/obj/item/device/tvcamera/streamer
+/obj/item/tvcamera/streamer
 	name = "streamer camera drone"
 	channel = "Virgo Live Stream"
 
-/obj/item/device/camera/selfie
+/obj/item/camera/selfie
 	name = "selfie stick"
 	desc = "A long stick with a camera on the end, designed for taking pictures of one's self, but could awkwardly be turned to take pictures of other things too!"
 	icon = 'icons/obj/entrepreneur.dmi'
@@ -471,58 +539,58 @@
 
 // Containers
 
-/obj/item/weapon/storage/box/fortune_teller
+/obj/item/storage/box/fortune_teller
 	name = "fortune teller kit"
 	desc = "A kit containing everything that a fortune teller needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "fortune_teller"
-	starts_with = list(/obj/item/weapon/entrepreneur/horoscope, /obj/item/weapon/deck/tarot, /obj/item/weapon/entrepreneur/crystal_ball, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/entrepreneur/horoscope, /obj/item/deck/tarot, /obj/item/entrepreneur/crystal_ball, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/dentist
+/obj/item/storage/box/dentist
 	name = "dentist kit"
 	desc = "A kit containing everything that a dentist needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "dentist"
-	starts_with = list(/obj/item/weapon/entrepreneur/dentist_mirror, /obj/item/weapon/entrepreneur/dentist_probe, /obj/item/weapon/entrepreneur/dentist_sickle, /obj/item/weapon/entrepreneur/dentist_scaler, /obj/item/device/flashlight/pen, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/entrepreneur/dentist_mirror, /obj/item/entrepreneur/dentist_probe, /obj/item/entrepreneur/dentist_sickle, /obj/item/entrepreneur/dentist_scaler, /obj/item/flashlight/pen, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/fitness_trainer
+/obj/item/storage/box/fitness_trainer
 	name = "exercise kit"
 	desc = "A kit containing everything that a fitness trainer needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "fitness_trainer"
-	starts_with = list(/obj/item/weapon/bedsheet/pillow/exercise, /obj/item/weapon/entrepreneur/dumbbell, /obj/item/weapon/entrepreneur/dumbbell, /obj/item/weapon/reagent_containers/food/snacks/candy/proteinbar, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/bedsheet/pillow/exercise, /obj/item/entrepreneur/dumbbell, /obj/item/entrepreneur/dumbbell, /obj/item/reagent_containers/food/snacks/candy/proteinbar, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/yoga_teacher
+/obj/item/storage/box/yoga_teacher
 	name = "yoga kit"
 	desc = "A kit containing everything that a yoga teacher needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "yoga_teacher"
-	starts_with = list(/obj/item/weapon/bedsheet/pillow/exercise, /obj/item/weapon/bedsheet/pillow/exercise, /obj/item/weapon/reagent_containers/food/snacks/fruitbar, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/bedsheet/pillow/exercise, /obj/item/bedsheet/pillow/exercise, /obj/item/reagent_containers/food/snacks/fruitbar, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/paranormal_investigator
+/obj/item/storage/box/paranormal_investigator
 	name = "ghost hunting kit"
 	desc = "A kit containing everything that a paranormal investigator needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "paranormal_investigator"
-	starts_with = list(/obj/item/weapon/entrepreneur/emf, /obj/item/weapon/entrepreneur/spirit_board, /obj/item/weapon/reagent_containers/food/drinks/glass2/shot, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/entrepreneur/emf, /obj/item/entrepreneur/spirit_board, /obj/item/reagent_containers/food/drinks/glass2/shot, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/spirit_healer
+/obj/item/storage/box/spirit_healer
 	name = "exercise kit"
 	desc = "A kit containing everything that a spirit healer needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "spirit_healer"
-	starts_with = list(/obj/item/weapon/entrepreneur/crystal, /obj/item/weapon/entrepreneur/crystal, /obj/item/weapon/entrepreneur/crystal, /obj/item/weapon/entrepreneur/crystal, /obj/item/weapon/entrepreneur/crystal, /obj/item/weapon/reagent_containers/glass/bottle/essential_oil, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/entrepreneur/crystal, /obj/item/entrepreneur/crystal, /obj/item/entrepreneur/crystal, /obj/item/entrepreneur/crystal, /obj/item/entrepreneur/crystal, /obj/item/reagent_containers/glass/bottle/essential_oil, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/private_investigator
+/obj/item/storage/box/private_investigator
 	name = "investigator kit"
 	desc = "A kit containing everything that a private eye needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "private_investigator"
-	starts_with = list(/obj/item/device/taperecorder, /obj/item/device/tape, /obj/item/device/tape, /obj/item/device/camera, /obj/item/sticky_pad, /obj/item/weapon/entrepreneur/magnifying_glass, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/taperecorder, /obj/item/tape, /obj/item/tape, /obj/item/camera, /obj/item/sticky_pad, /obj/item/entrepreneur/magnifying_glass, /obj/item/ticket_printer/train)
 
-/obj/item/weapon/storage/box/stylist
+/obj/item/storage/box/stylist
 	name = "stylist kit"
 	desc = "A kit containing everything that a stylist needs."
 	icon = 'icons/obj/entrepreneur.dmi'
 	icon_state = "stylist"
-	starts_with = list(/obj/item/weapon/makeover, /obj/item/weapon/lipstick/random, /obj/item/weapon/nailpolish,  /obj/item/weapon/nailpolish_remover, /obj/item/weapon/haircomb, /obj/item/clothing/head/hairnet, /obj/item/device/ticket_printer/train)
+	starts_with = list(/obj/item/makeover, /obj/item/lipstick/random, /obj/item/nailpolish,  /obj/item/nailpolish_remover, /obj/item/haircomb, /obj/item/clothing/head/hairnet, /obj/item/ticket_printer/train)

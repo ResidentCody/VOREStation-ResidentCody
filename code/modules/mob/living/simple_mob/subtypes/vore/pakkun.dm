@@ -30,7 +30,7 @@
 	can_be_drop_pred = 1 //They can tongue vore.
 
 	meat_amount = 5
-	meat_type = /obj/item/weapon/reagent_containers/food/snacks/meat
+	meat_type = /obj/item/reagent_containers/food/snacks/meat
 
 	vore_active = 1
 	vore_icons = SA_ICON_LIVING
@@ -81,11 +81,13 @@
 		return
 
 	if(resting)
-		vore_selected.digest_mode = DM_UNABSORB
+		if(isbelly(vore_selected))
+			vore_selected.digest_mode = DM_UNABSORB
 		ai_holder.go_sleep()
 
 	else
-		vore_selected.digest_mode = vore_default_mode
+		if(isbelly(vore_selected))
+			vore_selected.digest_mode = vore_default_mode
 		ai_holder.go_wake()
 
 /mob/living/simple_mob/vore/pakkun/attack_hand(mob/user)
@@ -95,7 +97,7 @@
 		return ..()
 	if(resting)
 		playsound(src, 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
-		user.visible_message("<span class='notice'>\The [user] shakes \the [src] awake.</span>","<span class='notice'>You shake \the [src] awake!</span>")
+		user.visible_message(span_notice("\The [user] shakes \the [src] awake."),span_notice("You shake \the [src] awake!"))
 		lay_down()
 		return
 	else
@@ -121,33 +123,33 @@
 		if(abs(holder.x - L.x)>6 || abs(holder.y - L.y)>6) //finally, pakkuns on the very very edge of the screen won't target you
 			our_targets -= list_target
 			continue
-	if(istype(holder, /mob/living/simple_mob))
+	if(isanimal(holder))
 		var/mob/living/simple_mob/SM = holder
 		our_targets -= SM.prey_excludes // Lazylist, but subtracting a null from the list seems fine.
 	return our_targets
 
-/datum/ai_holder/simple_mob/ranged/pakkun/can_attack(atom/movable/the_target, var/vision_required = TRUE)
+/datum/ai_holder/simple_mob/ranged/pakkun/can_attack(atom/movable/the_target, vision_required = TRUE)
 	.=..()
 	if(isliving(the_target))
 		var/mob/living/L = the_target
 		if(!(L.can_be_drop_prey && L.throw_vore && L.allowmobvore))
 			return FALSE
-		if(istype(holder, /mob/living/simple_mob))
+		if(isanimal(holder))
 			var/mob/living/simple_mob/SM = holder
 			if(LAZYFIND(SM.prey_excludes, L))
 				return FALSE
 	else
 		return FALSE
 
-/mob/living/simple_mob/vore/pakkun/on_throw_vore_special(var/pred, var/mob/living/target)
+/mob/living/simple_mob/vore/pakkun/on_throw_vore_special(pred, mob/living/target)
 	if(pred && !extra_possessive && !(LAZYFIND(prey_excludes, target)))
 		LAZYSET(prey_excludes, target, world.time)
 		addtimer(CALLBACK(src, PROC_REF(removeMobFromPreyExcludes), WEAKREF(target)), 5 MINUTES)
 	if(ai_holder)
 		ai_holder.remove_target()
 
-/mob/living/simple_mob/vore/pakkun/init_vore()
-	..()
+/mob/living/simple_mob/vore/pakkun/load_default_bellies()
+	. = ..()
 	var/obj/belly/B = vore_selected
 	B.name = "stomach"
 	B.desc = "you land with a soft bump in what can only be described as a big soft slimy sack, the walls effortlessly stretching to match your every move with no sign of reaching any kind of elastic \
@@ -160,16 +162,16 @@
 	B.digestchance = 0
 	B.digest_mode = DM_SELECT
 
-/mob/living/simple_mob/vore/pakkun/attackby(var/obj/item/O, var/mob/user) //if they're newspapered, they'll spit out any junk they've eaten for whatever reason
-    if(istype(O, /obj/item/weapon/newspaper) && !ckey && isturf(user.loc))
-        user.visible_message("<span class='info'>[user] swats [src] with [O]!</span>")
-        release_vore_contents()
-        for(var/mob/living/L in living_mobs(0))
-            if(!(LAZYFIND(prey_excludes, L)))
-                LAZYSET(prey_excludes, L, world.time)
-                addtimer(CALLBACK(src, PROC_REF(removeMobFromPreyExcludes), WEAKREF(L)), 5 MINUTES)
-    else
-        ..()
+/mob/living/simple_mob/vore/pakkun/attackby(obj/item/O, mob/user) //if they're newspapered, they'll spit out any junk they've eaten for whatever reason
+	if(istype(O, /obj/item/newspaper) && !ckey && isturf(user.loc))
+		user.visible_message(span_info("[user] swats [src] with [O]!"))
+		release_vore_contents()
+		for(var/mob/living/L in living_mobs(0))
+			if(!(LAZYFIND(prey_excludes, L)))
+				LAZYSET(prey_excludes, L, world.time)
+				addtimer(CALLBACK(src, PROC_REF(removeMobFromPreyExcludes), WEAKREF(L)), 5 MINUTES)
+	else
+		..()
 
 //a palette-swapped version that's a bit bossier, in JRPG tradition
 
@@ -183,7 +185,7 @@
 
 	extra_possessive = TRUE //you're gonna get KEPT, at least the first time you go in
 
-/mob/living/simple_mob/vore/pakkun/snapdragon/on_throw_vore_special(var/pred, var/mob/living/target)
+/mob/living/simple_mob/vore/pakkun/snapdragon/on_throw_vore_special(pred, mob/living/target)
 	..()
 	extra_possessive = !extra_possessive //toggle their possessiveness on and off every time they eat someone
 
@@ -199,7 +201,7 @@
 
 	extra_possessive = TRUE // won't let its prey go if it's awake, luckily, see below.
 
-/mob/living/simple_mob/vore/pakkun/sand/on_throw_vore_special(var/pred, var/mob/living/target)
+/mob/living/simple_mob/vore/pakkun/sand/on_throw_vore_special(pred, mob/living/target)
 	..()
 	autorest_cooldown = 0 // Sand pakkuns, also known as napdragons, like to curl up for an small sleemp after eating. This is your chance to escape.
 
@@ -253,7 +255,7 @@
 			our_targets -= list_target
 	return our_targets
 
-/datum/ai_holder/simple_mob/ranged/pakkun/snappy/can_attack(atom/movable/the_target, var/vision_required = TRUE)
+/datum/ai_holder/simple_mob/ranged/pakkun/snappy/can_attack(atom/movable/the_target, vision_required = TRUE)
 	.=..()
 	var/mob/living/simple_mob/vore/pakkun/snapdragon/snappy/SM = holder
 	if(!(the_target in SM.petters))
@@ -261,7 +263,7 @@
 
 /mob/living/simple_mob/vore/pakkun/snapdragon/snappy/attack_hand(mob/living/carbon/human/M as mob)
 	if(M.a_intent == I_HELP && !(M in petters))
-		to_chat(M, "<span class='notice'>\The [src] gets a mischievous glint in her eye!!</span>")
+		to_chat(M, span_notice("\The [src] gets a mischievous glint in her eye!!"))
 		petters += M //YOU HAVE OFFERED YOURSELF TO THE LIZARD
 	return ..()
 
@@ -270,8 +272,8 @@
 		petters -= pick(petters)
 	..()
 
-/mob/living/simple_mob/vore/pakkun/snapdragon/snappy/init_vore()
-	..()
+/mob/living/simple_mob/vore/pakkun/snapdragon/snappy/load_default_bellies()
+	. = ..()
 	var/obj/belly/B = vore_selected
 	B.digest_mode = DM_HOLD
 	B.desc = "the lizard gently yet insistently stuffs you down her gullet - evidently enjoying this moment of playtime as you land in a sprawled heap in the stretchy, clinging sack that makes up \

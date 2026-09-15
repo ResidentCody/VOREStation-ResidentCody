@@ -1,49 +1,61 @@
-import { useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
+import { useBackend } from 'tgui/backend';
+import { Button, Icon, Section, Stack, Tooltip } from 'tgui-core/components';
+import type { BooleanLike } from 'tgui-core/react';
+import type { Data, Reagent } from './types';
 
-import { useBackend } from '../../backend';
-import { Button, Flex, Icon, Section, Tooltip } from '../../components';
-import { Data } from './types';
-
-export const ChemDispenserChemicals = (props) => {
-  const { act, data } = useBackend<Data>();
-  const { chemicals = [] } = data;
+export const ChemDispenserChemicals = (props: {
+  sectionTitle: string;
+  chemicals: Reagent[];
+  /** Called when the user clicks on a reagent dispense button. Arg is the ID of the button's reagent. */
+  dispenseAct: (reagentId: string) => void;
+  /** Optional callback that returns whether or not a reagent dispense button will appear "activated". Arg is the ID of the button's reagent. */
+  chemicalButtonSelect?: (reagentId: string) => BooleanLike;
+  /** Extra UI elements that will appear within the header of the chemical UI. */
+  buttons: ReactNode;
+}) => {
+  const {
+    chemicals,
+    sectionTitle,
+    dispenseAct,
+    chemicalButtonSelect,
+    buttons,
+  } = props;
   const flexFillers: boolean[] = [];
-  for (let i = 0; i < (chemicals.length + 1) % 3; i++) {
-    flexFillers.push(true);
-  }
+  const sortedChemicals: Reagent[] = chemicals;
+  sortedChemicals.sort((a, b) => a.name.localeCompare(b.name));
   return (
-    <Section
-      title={data.glass ? 'Drink Dispenser' : 'Chemical Dispenser'}
-      flexGrow
-      buttons={<RecordingBlinker />}
-    >
-      <Flex direction="row" wrap="wrap" height="100%" align="flex-start">
-        {chemicals.map((c, i) => (
-          <Flex.Item key={i} grow="1" m={0.2} basis="40%" height="20px">
+    <Section title={sectionTitle} fill scrollable buttons={buttons}>
+      <Stack direction="row" wrap="wrap" align="flex-start" g={0.3}>
+        {sortedChemicals.map((c, i) => (
+          <Stack.Item key={i} basis="49%" grow maxWidth="50%">
             <Button
-              icon="arrow-circle-down"
-              width="100%"
-              height="100%"
+              fluid
               align="flex-start"
-              onClick={() =>
-                act('dispense', {
-                  reagent: c.id,
-                })
+              tooltip={c.name.length > 15 ? c.name : undefined}
+              selected={
+                chemicalButtonSelect ? chemicalButtonSelect(c.id) : false
               }
+              onClick={() => dispenseAct(c.id)}
             >
-              {c.name + ' (' + c.volume + ')'}
+              <Stack>
+                <Stack.Item>
+                  <Icon name="arrow-circle-down" />
+                </Stack.Item>
+                <Stack.Item grow overflow="hidden">
+                  {c.name}
+                </Stack.Item>
+                <Stack.Item>{`(${c.volume})`}</Stack.Item>
+              </Stack>
             </Button>
-          </Flex.Item>
+          </Stack.Item>
         ))}
-        {flexFillers.map((_, i) => (
-          <Flex.Item key={i} grow="1" basis="25%" height="20px" />
-        ))}
-      </Flex>
+      </Stack>
     </Section>
   );
 };
 
-const RecordingBlinker = (props) => {
+export const RecordingBlinker = (props) => {
   const { data } = useBackend<Data>();
   const recording = !!data.recordingRecipe;
 

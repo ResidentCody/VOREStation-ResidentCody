@@ -1,18 +1,17 @@
-import { toFixed } from 'common/math';
-
-import { useBackend } from '../../backend';
+import { useBackend } from 'tgui/backend';
 import {
   AnimatedNumber,
   Box,
   Button,
-  Flex,
   Icon,
   LabeledList,
   ProgressBar,
   Section,
-} from '../../components';
+  Stack,
+} from 'tgui-core/components';
+
 import { damageTypes, statNames } from './constants';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const CryoContent = (props) => {
   const { act, data } = useBackend<Data>();
@@ -53,7 +52,7 @@ export const CryoContent = (props) => {
               >
                 <AnimatedNumber
                   value={occupant.health}
-                  format={(value) => toFixed(value)}
+                  format={(value) => value.toFixed()}
                 />
               </ProgressBar>
             </LabeledList.Item>
@@ -66,7 +65,7 @@ export const CryoContent = (props) => {
             <LabeledList.Item label="Temperature">
               <AnimatedNumber
                 value={occupant.bodyTemperature}
-                format={(value) => toFixed(value) + ' K'}
+                format={(value) => `${value.toFixed()} K`}
               />
             </LabeledList.Item>
             <LabeledList.Divider />
@@ -78,20 +77,20 @@ export const CryoContent = (props) => {
                 >
                   <AnimatedNumber
                     value={occupant[damageType.type]}
-                    format={(value) => toFixed(value)}
+                    format={(value) => value.toFixed()}
                   />
                 </ProgressBar>
               </LabeledList.Item>
             ))}
           </LabeledList>
         ) : (
-          <Flex height="100%" textAlign="center">
-            <Flex.Item grow="1" align="center" color="label">
+          <Stack height="100%" textAlign="center">
+            <Stack.Item grow align="center" color="label">
               <Icon name="user-slash" mb="0.5rem" size={5} />
               <br />
               No occupant detected.
-            </Flex.Item>
-          </Flex>
+            </Stack.Item>
+          </Stack>
         )}
       </Section>
       <Section
@@ -139,7 +138,7 @@ const CryoBeaker = (props) => {
           {beakerVolume ? (
             <AnimatedNumber
               value={beakerVolume}
-              format={(v) => toFixed(v) + ' units remaining'}
+              format={(v) => `${v.toFixed()} units remaining`}
             />
           ) : (
             'Beaker is empty'

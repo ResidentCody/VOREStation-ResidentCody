@@ -1,23 +1,9 @@
-import { CheckboxInput, FeatureToggle } from '../base';
+import { CheckboxInput, type FeatureToggle } from '../base';
 
 export const AMBIENT_OCCLUSION_PREF: FeatureToggle = {
   name: 'Enable ambient occlusion',
   category: 'GAMEPLAY',
   description: 'Enable ambient occlusion, light shadows around characters.',
-  component: CheckboxInput,
-};
-
-export const MOB_TOOLTIPS: FeatureToggle = {
-  name: 'Enable mob tooltips',
-  category: 'GAMEPLAY',
-  description: 'Enable tooltips when hovering over mobs.',
-  component: CheckboxInput,
-};
-
-export const INV_TOOLTIPS: FeatureToggle = {
-  name: 'Enable inventory tooltips',
-  category: 'GAMEPLAY',
-  description: 'Enable tooltips when hovering over inventory items.',
   component: CheckboxInput,
 };
 
@@ -78,5 +64,49 @@ export const MessengerEmbeds: FeatureToggle = {
   category: 'UI',
   description:
     'When enabled, PDAs and Communicators will attempt to embed links from discord & imgur.',
+  component: CheckboxInput,
+};
+
+export const AutoPunctuation: FeatureToggle = {
+  name: 'Automatic Punctuation',
+  category: 'GAMEPLAY',
+  description:
+    'When enabled, if your message ends in a letter with no punctuation, a period will be added.',
+  component: CheckboxInput,
+};
+
+export const BrowserDevTools: FeatureToggle = {
+  name: 'Browser Dev Tools',
+  category: 'UI',
+  description:
+    'When enabled, you can right click -> inspect to open Microsoft Edge dev tools. BYOND 516+ Only.',
+  component: CheckboxInput,
+};
+
+export const obfuscate_key: FeatureToggle = {
+  name: 'Obfuscate Key',
+  category: 'UI',
+  description: 'Hide your byond ckey from other players in the lobby',
+  component: CheckboxInput,
+};
+
+export const obfuscate_job: FeatureToggle = {
+  name: 'Obfuscate Job',
+  category: 'UI',
+  description: 'Hide your job from other players in the lobby',
+  component: CheckboxInput,
+};
+
+export const EMOTE_VARY: FeatureToggle = {
+  name: 'Vary Emote Pitch',
+  category: 'SOUNDS',
+  description: 'Varies the pitch of your emotes randomly.',
+  component: CheckboxInput,
+};
+
+export const AUTOTRANSCORE: FeatureToggle = {
+  name: 'Automatically Notify Transcore on Death',
+  category: 'GAMEPLAY',
+  description: 'Do you want medbay to know you died automatically?',
   component: CheckboxInput,
 };

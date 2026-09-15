@@ -4,10 +4,15 @@
 	wrenchable = 1
 	icon_state = "drying_rack"
 	icon_base = "drying_rack"
+	circuit = /obj/item/circuitboard/smartfridge/drying
 
-/obj/machinery/smartfridge/drying_rack/accept_check(var/obj/item/O as obj)
-	if(istype(O, /obj/item/weapon/reagent_containers/food/snacks/))
-		var/obj/item/weapon/reagent_containers/food/snacks/S = O
+/obj/machinery/smartfridge/drying_rack/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/climbable)
+
+/obj/machinery/smartfridge/drying_rack/accept_check(obj/item/O as obj)
+	if(istype(O, /obj/item/reagent_containers/food/snacks/))
+		var/obj/item/reagent_containers/food/snacks/S = O
 		if (S.dried_type)
 			return 1
 
@@ -44,7 +49,7 @@
 
 /obj/machinery/smartfridge/drying_rack/proc/dry()
 	for(var/datum/stored_item/I in item_records)
-		for(var/obj/item/weapon/reagent_containers/food/snacks/S in I.instances)
+		for(var/obj/item/reagent_containers/food/snacks/S in I.instances)
 			if(S.dry) continue
 			if(S.dried_type == S.type)
 				S.dry = 1

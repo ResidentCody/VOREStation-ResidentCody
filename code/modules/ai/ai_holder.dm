@@ -14,19 +14,9 @@
 	var/datum/ai_holder/ai_holder = null
 	var/ai_holder_type = null // Which ai_holder datum to give to the mob when initialized. If null, nothing happens.
 
-/mob/living/Initialize()
+/mob/living/Initialize(mapload)
 	if(!ai_holder)
 		initialize_ai_holder()
-	return ..()
-
-/mob/living/Destroy()
-	if(ai_holder)
-		ai_holder.holder = null
-		ai_holder.UnregisterSignal(src,COMSIG_MOB_STATCHANGE)
-		if(ai_holder.faction_friends && ai_holder.faction_friends.len) //This list is shared amongst the faction
-			ai_holder.faction_friends -= src
-			ai_holder.faction_friends = null
-		QDEL_NULL(ai_holder)
 	return ..()
 
 /mob/living/Login()
@@ -39,7 +29,7 @@
 		ai_holder.manage_processing(AI_PROCESSING)
 	return ..()
 
-//Extracted from mob/living/Initialize() so that we may call it at any time after a mob was created
+//Extracted from mob/living/Initialize(mapload) so that we may call it at any time after a mob was created
 /mob/living/proc/initialize_ai_holder()
 	if(ai_holder)	//Making double sure we clean up and properly GC the original ai_holder
 		var/old_holder = ai_holder
@@ -48,12 +38,11 @@
 	if(ai_holder_type)
 		ai_holder = new ai_holder_type(src)
 		if(!ai_holder)
-			log_debug("[src] could not initialize ai_holder of type [ai_holder_type]")
+			log_runtime("[src] could not initialize ai_holder of type [ai_holder_type]")
 			return
-		if(istype(src, /mob/living/carbon/human))
+		if(ishuman(src))
 			var/mob/living/carbon/human/H = src
-			H.hud_used = new /datum/hud(H)
-			H.create_mob_hud(H.hud_used)
+			new /datum/hud(H)
 
 /datum/ai_holder
 	var/mob/living/holder = null		// The mob this datum is going to control.
@@ -65,7 +54,7 @@
 										// consider sleeping the AI instead.
 	var/process_flags = 0				// Where we're processing, see flag defines.
 	var/list/snapshot = null			// A list used in mass-editing of AI datums, holding a snapshot of the 'before' state
-	var/list/static/fastprocess_stances = list(
+	var/static/list/fastprocess_stances = list(
 		STANCE_ALERT,
 		STANCE_APPROACH,
 		STANCE_FIGHT,
@@ -76,7 +65,7 @@
 		STANCE_FLEE,
 		STANCE_DISABLED
 	)
-	var/list/static/noprocess_stances = list(
+	var/static/list/noprocess_stances = list(
 		STANCE_SLEEP
 	)
 
@@ -101,8 +90,8 @@
 		if(!check_rights(R_ADMIN))
 			return
 		if(snapshot)
-			to_chat(usr, "<span class='error'>Someone (or you) may have started a mass edit on this AI datum already. Refresh the VV window to get the option to end the mass edit instead.</span>")
-			href_list["datumrefresh"] = "\ref[src]"
+			to_chat(usr, span_warning("Someone (or you) may have started a mass edit on this AI datum already. Refresh the VV window to get the option to end the mass edit instead."))
+			href_list[VV_HK_DATUM_REFRESH] = "\ref[src]"
 			return
 		snapshot = vars.Copy() //'vars' appears to be special in that vars.Copy produces a flat list of keys with no values. It seems that 'vars[key]' is handled somewhere in the byond engine differently than normal lists.
 
@@ -143,8 +132,8 @@
 			snapshot[key] = thing
 
 		VARSET_IN(src, snapshot, null, 2 MINUTES) // Safety
-		to_chat(usr, "<span class='notice'>Variable snapshot saved. Begin editing the datum, and end the mass edit from the dropdown menu within 2 minutes. Note that editing the contents of lists is not supported.</span>")
-		href_list["datumrefresh"] = "\ref[src]"
+		to_chat(usr, span_notice("Variable snapshot saved. Begin editing the datum, and end the mass edit from the dropdown menu within 2 minutes. Note that editing the contents of lists is not supported."))
+		href_list[VV_HK_DATUM_REFRESH] = "\ref[src]"
 
 	IF_VV_OPTION("mass_edit_finish")
 		if(!check_rights(R_ADMIN))
@@ -167,14 +156,13 @@
 			diff += key
 
 		if(!diff.len)
-			to_chat(usr, "<span class='warning'>You don't appear to have changed anything on the AI datum you were editing.</span>")
-			href_list["datumrefresh"] = "\ref[src]"
+			to_chat(usr, span_warning("You don't appear to have changed anything on the AI datum you were editing."))
+			href_list[VV_HK_DATUM_REFRESH] = "\ref[src]"
 		else
-			var/message = "<span class='notice'>These differences were detected in your varedit. If you notice any that you didn't change, please redo your edit:<br>"
+			var/message = "These differences were detected in your varedit. If you notice any that you didn't change, please redo your edit:<br>"
 			for(var/key in diff)
-				message += "<b>- [key]:</b> [before[key]] => [after[key]]<br>"
-			message += "</span>"
-			to_chat(usr,message)
+				message += span_bold("- [key]:") + " [before[key]] => [after[key]]<br>"
+			to_chat(usr,span_notice(message))
 
 		var/original_type = holder.type
 		var/list/levels_working = GetConnectedZlevels(holder.z)
@@ -189,7 +177,7 @@
 			types += text2path(typestring)
 			typestring += "/"
 
-		var/list/searching = living_mob_list // Started/seeded with this
+		var/list/searching = GLOB.living_mob_list // Started/seeded with this
 		var/list/choices = list()
 		for(var/typechoice in types)
 			var/list/found = list()
@@ -204,26 +192,26 @@
 
 		var/choice = tgui_input_list(usr,"Based on your AI holder's mob location, we'll edit mobs on Z [levels_working.Join(",")]. What types do you want to alter?", "Types", choices)
 		if(!choice)
-			href_list["datumrefresh"] = "\ref[src]"
+			href_list[VV_HK_DATUM_REFRESH] = "\ref[src]"
 			return
 		var/list/selected = choices[choice]
 		for(var/mob/living/L as anything in selected)
 			if(!istype(L))
-				to_chat(usr,"<span class='warning'>Skipping incompatible mob: [L] [ADMIN_COORDJMP(L)]</span>")
+				to_chat(usr,span_warning("Skipping incompatible mob: [L] [ADMIN_COORDJMP(L)]"))
 				continue
 			if(!L.ai_holder)
-				to_chat(usr,"<span class='warning'>Skipping due to no AI: [L] [ADMIN_COORDJMP(L)]</span>")
+				to_chat(usr,span_warning("Skipping due to no AI: [L] [ADMIN_COORDJMP(L)]"))
 				continue
 			for(var/newvar in diff)
 				if(newvar in L.ai_holder.vars)
 					L.ai_holder.vars[newvar] = after[newvar]
 				else
-					to_chat(usr,"<span class='warning'>Skipping unavailable var '[newvar]' on: [L] [ADMIN_COORDJMP(L)]</span>")
+					to_chat(usr,span_warning("Skipping unavailable var '[newvar]' on: [L] [ADMIN_COORDJMP(L)]"))
 
-		to_chat(usr,"<span class='notice'>Mass AI edit done.</span>")
-		href_list["datumrefresh"] = "\ref[src]"
+		to_chat(usr,span_notice("Mass AI edit done."))
+		href_list[VV_HK_DATUM_REFRESH] = "\ref[src]"
 
-/datum/ai_holder/New(var/new_holder)
+/datum/ai_holder/New(new_holder)
 	ASSERT(new_holder)
 	holder = new_holder
 	home_turf = get_turf(holder)
@@ -237,7 +225,7 @@
 	home_turf = null
 	return ..()
 
-/datum/ai_holder/proc/manage_processing(var/desired)
+/datum/ai_holder/proc/manage_processing(desired)
 	if(desired & AI_PROCESSING)
 		START_AIPROCESSING(src)
 	else
@@ -248,7 +236,8 @@
 	else
 		STOP_AIFASTPROCESSING(src)
 
-/datum/ai_holder/proc/holder_stat_change(var/mob, old_stat, new_stat)
+/datum/ai_holder/proc/holder_stat_change(mob, old_stat, new_stat)
+	SIGNAL_HANDLER
 	if(old_stat >= DEAD && new_stat <= DEAD) //Revived
 		manage_processing(AI_PROCESSING)
 	else if(old_stat <= DEAD && new_stat >= DEAD) //Killed
@@ -270,7 +259,7 @@
 	holder.apply_hud(STATUS_HUD, sleepingimage)
 
 // Now for the actual AI stuff.
-/datum/ai_holder/proc/set_busy(var/value = 0)
+/datum/ai_holder/proc/set_busy(value = 0)
 	busy = value
 	update_paused_hud()
 
@@ -333,7 +322,7 @@
 /datum/ai_holder/proc/handle_special_strategical()
 
 // For setting the stance WITHOUT processing it
-/datum/ai_holder/proc/set_stance(var/new_stance)
+/datum/ai_holder/proc/set_stance(new_stance)
 	if(holder?.key && !autopilot)
 		return
 	if(stance == new_stance)
@@ -393,7 +382,7 @@
 				var/mob/living/holder = src.holder
 				ai_log("handle_stance_tactical() : Owner was stat, moving.", AI_LOG_TRACE)
 				holder.forceMove(get_turf(L))
-				holder.visible_message("<span class='danger'>[src] climbs out of [L], ready to continue fighting!</span>")
+				holder.visible_message(span_danger("[src] climbs out of [L], ready to continue fighting!"))
 				playsound(holder, 'sound/effects/splat.ogg')
 
 		// Should we flee?

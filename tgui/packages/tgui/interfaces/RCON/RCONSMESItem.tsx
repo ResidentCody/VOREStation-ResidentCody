@@ -1,8 +1,7 @@
-import { toFixed } from 'common/math';
+import { ProgressBar, Stack } from 'tgui-core/components';
 
-import { ProgressBar, Stack } from '../../components';
 import { SMESControls } from './RCONSMESControls';
-import { rconSmes } from './types';
+import type { rconSmes } from './types';
 
 export const SMESItem = (props: { smes: rconSmes }) => {
   const { capacityPercent, capacity, charge, RCON_tag } = props.smes;
@@ -11,10 +10,10 @@ export const SMESItem = (props: { smes: rconSmes }) => {
     <Stack vertical>
       <Stack.Item>
         <Stack fill justify="space-between">
-          <Stack.Item flexBasis="40%" fontSize={1.2}>
+          <Stack.Item basis="20%" fontSize={1.2}>
             {RCON_tag}
           </Stack.Item>
-          <Stack.Item grow={1}>
+          <Stack.Item grow>
             <ProgressBar
               value={capacityPercent * 0.01}
               ranges={{
@@ -23,9 +22,9 @@ export const SMESItem = (props: { smes: rconSmes }) => {
                 bad: [-Infinity, 0.15],
               }}
             >
-              {toFixed(charge / (1000 * 60), 1) +
+              {(charge / (1000 * 60)).toFixed(1) +
                 'kWh / ' +
-                toFixed(capacity / (1000 * 60)) +
+                (capacity / (1000 * 60)).toFixed() +
                 'kWh (' +
                 capacityPercent +
                 '%)'}

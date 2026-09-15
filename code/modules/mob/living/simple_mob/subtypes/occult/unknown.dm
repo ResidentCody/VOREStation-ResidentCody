@@ -39,7 +39,10 @@
 	var/recently_used_attack = GA_SPEEDUP
 	var/all_special_attacks = list(GA_ADS, GA_CALLDOWN, GA_LINES, GA_BULLETHELL, GA_ILLUSION, GA_CONFUSION, GA_SPEEDUP)
 
-	loot_list = list(/obj/item/device/nif/glitch = 100)
+	loot_list = list(/obj/item/nif/glitch = 100)
+
+	can_be_drop_prey = FALSE
+	can_pain_emote = FALSE
 
 /obj/item/projectile/energy/slow_orb
 	name = "TROJAN"
@@ -125,7 +128,7 @@
 			var/mob/target = pick(potential_targets)
 			potential_targets -= target
 			if(target.client)
-				target.client.create_fake_ad_popup_multiple(/obj/screen/popup/default, 5)
+				target.client.create_fake_ad_popup_multiple(/atom/movable/screen/popup/default, 5)
 
 /mob/living/simple_mob/glitch_boss/proc/bombardment(atom/A)
 	var/list/potential_targets = ai_holder.list_targets()
@@ -203,13 +206,13 @@
 
 	if(target && istype(target))
 		if(target.client)
-			to_chat(target, "<span class='critical'>You feel as though you are losing your sense of direction! Brace yourself!</span>")
+			to_chat(target, span_critical("You feel as though you are losing your sense of direction! Brace yourself!"))
 		new /obj/effect/temp_visual/pre_confuse(get_turf(target))
 		spawn(5 SECONDS)
 			if(target)
 				target.Confuse(3)
 				if(target.client)
-					to_chat(target, "<span class='critical'>You feel confused!</span>")
+					to_chat(target, span_critical("You feel confused!"))
 				new /obj/effect/temp_visual/confuse(get_turf(target))
 
 /mob/living/simple_mob/glitch_boss/proc/bullethell(atom/A)
@@ -314,6 +317,8 @@
 	var/prob_respawn = 15
 
 	ai_holder_type = /datum/ai_holder/simple_mob/ranged/aggressive/bossmob_glitch_fake
+
+	can_pain_emote = FALSE
 
 /mob/living/simple_mob/glitch_boss_fake/strong
 	maxHealth = 100

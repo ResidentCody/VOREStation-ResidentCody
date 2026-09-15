@@ -61,17 +61,7 @@
 			"bio" = 0,
 			"rad" = 100)
 
-	armor_soak = list(
-		"melee" = 100,
-		"bullet" = 100,
-		"laser" = 0,
-		"energy" = 0,
-		"bomb" = 0,
-		"bio" = 0,
-		"rad" = 100
-		)
-
-	loot_list = list(/obj/item/weapon/ore/diamond = 100, /obj/item/weapon/ectoplasm = 3)
+	loot_list = list(/obj/item/ore/diamond = 100, /obj/item/ectoplasm = 3)
 
 	speak_emote = list("rumbles")
 
@@ -87,6 +77,8 @@
 	reload_count = 0
 	reload_time = 7 SECONDS
 
+	can_be_drop_prey = FALSE
+
 
 /datum/ai_holder/simple_mob/ranged/kiting/space_ghost
 	hostile = TRUE
@@ -95,9 +87,10 @@
 	violent_breakthrough = TRUE
 	speak_chance = 0
 
-/mob/living/simple_mob/vore/alienanimals/space_ghost/apply_melee_effects(var/atom/A)
+/mob/living/simple_mob/vore/alienanimals/space_ghost/apply_melee_effects(atom/A)
 	var/mob/living/L = A
-	L.hallucination += 50
+	if(L.hallucination <= 100)
+		L.hallucination += rand(1,10)
 
 /mob/living/simple_mob/vore/alienanimals/space_ghost/shoot(atom/A) //We're shooting ghosts at people and need them to have the same faction as their parent, okay?
 	if(!projectiletype)
@@ -172,23 +165,13 @@
 			"bio" = 0,
 			"rad" = 100)
 
-	armor_soak = list(
-		"melee" = 100,
-		"bullet" = 100,
-		"laser" = 0,
-		"energy" = 0,
-		"bomb" = 0,
-		"bio" = 0,
-		"rad" = 100
-		)
-
 	speak_emote = list("rumbles")
 
 	vore_active = 0
 
 	ai_holder_type = /datum/ai_holder/simple_mob/melee/space_ghost
 
-/mob/living/simple_mob/vore/alienanimals/spooky_ghost/Initialize()
+/mob/living/simple_mob/vore/alienanimals/spooky_ghost/Initialize(mapload)
 	. = ..()
 	icon_living = "spookyghost-[rand(1,2)]"
 	icon_state = icon_living
@@ -206,10 +189,11 @@
 	. = ..()
 	qdel(src)
 
-/mob/living/simple_mob/vore/alienanimals/spooky_ghost/apply_melee_effects(var/atom/A)
+/mob/living/simple_mob/vore/alienanimals/spooky_ghost/apply_melee_effects(atom/A)
 	var/mob/living/L = A
 	if(L && istype(L))
-		L.hallucination += rand(1,50)
+		if(L.hallucination <= 100)
+			L.hallucination += rand(1,10)
 
 /mob/living/simple_mob/vore/alienanimals/spooky_ghost/Life()
 	. = ..()

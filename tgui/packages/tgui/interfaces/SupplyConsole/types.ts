@@ -1,33 +1,35 @@
-import { BooleanLike } from 'common/react';
+import type { BooleanLike } from 'tgui-core/react';
 
 export type Data = {
   shuttle_auth: BooleanLike;
   order_auth: BooleanLike;
-  shuttle: shuttleStatus;
+  shuttle: ShuttleStatus;
   supply_points: number;
-  orders: order[];
-  receipts: receipt[];
+  orders: Order[];
+  receipts: Receipt[];
   contraband: BooleanLike;
-  modal: modalData;
-  supply_packs: supplyPack[];
+  modal: ModalData;
+  supply_packs: SupplyPack[];
   categories: string[];
 };
 
-export type modalData = {
+export type ModalData = {
   id: string;
   text: string;
   args: {
     name: string;
+    desc: string;
     cost: number;
     manifest: string[];
     ref: string;
     random: number;
   };
-  modal_type: string;
+  type: string;
 };
 
-export type supplyPack = {
+export type SupplyPack = {
   name: string;
+  desc: string;
   cost: number;
   group: string;
   contraband: BooleanLike;
@@ -36,7 +38,7 @@ export type supplyPack = {
   ref: string;
 };
 
-type shuttleStatus = {
+type ShuttleStatus = {
   location: string;
   mode: number;
   time: number;
@@ -45,14 +47,14 @@ type shuttleStatus = {
   force: BooleanLike;
 };
 
-type order = {
+type Order = {
   ref: string;
   status: string;
   cost: number;
   entries: { field: string; entry: string }[];
 };
 
-type receipt = {
+type Receipt = {
   ref: string;
   contents: {
     object: string;

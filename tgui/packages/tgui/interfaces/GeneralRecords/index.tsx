@@ -1,17 +1,17 @@
-import { useBackend } from '../../backend';
-import { Section } from '../../components';
-import { Window } from '../../layouts';
-import { ComplexModal } from '../common/ComplexModal';
-import { LoginInfo } from '../common/LoginInfo';
-import { LoginScreen } from '../common/LoginScreen';
-import { TemporaryNotice } from '../common/TemporaryNotice';
+import { useBackend } from 'tgui/backend';
+import { ComplexModal } from 'tgui/interfaces/common/ComplexModal';
+import { LoginInfo } from 'tgui/interfaces/common/LoginInfo';
+import { LoginScreen } from 'tgui/interfaces/common/LoginScreen';
+import { TemporaryNotice } from 'tgui/interfaces/common/TemporaryNotice';
+import { Window } from 'tgui/layouts';
+import { Section } from 'tgui-core/components';
 import { GeneralRecordsList } from './GeneralRecordsList';
 import {
   GeneralRecordsMaintenance,
   GeneralRecordsNavigation,
   GeneralRecordsView,
 } from './GeneralRecordsOptions';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const GeneralRecords = (props) => {
   const { data } = useBackend<Data>();

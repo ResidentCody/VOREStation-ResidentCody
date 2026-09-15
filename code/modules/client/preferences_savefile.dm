@@ -1,5 +1,5 @@
 #define SAVEFILE_VERSION_MIN	8
-#define SAVEFILE_VERSION_MAX	14
+#define SAVEFILE_VERSION_MAX	19
 
 /*
 SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Carn
@@ -41,25 +41,73 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	// Migration for client preferences
 	if(current_version < 13)
-		log_debug("[client_ckey] preferences migrating from [current_version] to v13....")
+		log_world("[client_ckey] preferences migrating from [current_version] to v13....")
 		to_chat(client, span_danger("Migrating savefile from version [current_version] to v13..."))
 
 		migration_13_preferences(S)
 
-		log_debug("[client_ckey] preferences successfully migrated from [current_version] to v13.")
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v13.")
 		to_chat(client, span_danger("v13 savefile migration complete."))
 
 	// Migration for nifs
 	if(current_version < 14)
-		log_debug("[client_ckey] preferences migrating from [current_version] to v14....")
+		log_world("[client_ckey] preferences migrating from [current_version] to v14....")
 		to_chat(client, span_danger("Migrating savefile from version [current_version] to v14..."))
 
 		migration_14_nifs(S)
 
-		log_debug("[client_ckey] preferences successfully migrated from [current_version] to v14.")
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v14.")
 		to_chat(client, span_danger("v14 savefile migration complete."))
 
+	// Migration for nifs, again, to get rid of the /device path
+	if(current_version < 15)
+		log_world("[client_ckey] preferences migrating from [current_version] to v15....")
+		to_chat(client, span_danger("Migrating savefile from version [current_version] to v15..."))
 
+		migration_15_nif_path(S)
+
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v15.")
+		to_chat(client, span_danger("v15 savefile migration complete."))
+
+	// Migration for colors
+	if(current_version < 16)
+		log_world("[client_ckey] preferences migrating from [current_version] to v16....")
+		to_chat(client, span_danger("Migrating savefile from version [current_version] to v16..."))
+
+		migration_16_colors(S)
+
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v16.")
+		to_chat(client, span_danger("v16 savefile migration complete."))
+
+	// Migration for old named tails so downstream doesn't have their savefiles borked
+	if(current_version < 17)
+		log_world("[client_ckey] preferences migrating from [current_version] to v17....")
+		to_chat(client, span_danger("Migrating savefile from version [current_version] to v17..."))
+
+		migration_17_tails(S)
+
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v17.")
+		to_chat(client, span_danger("v17 savefile migration complete."))
+
+	// Migration for jukebox volume from 0-1 to 0-100
+	if(current_version < 18)
+		log_world("[client_ckey] preferences migrating from [current_version] to v18....")
+		to_chat(client, span_danger("Migrating savefile from version [current_version] to v18..."))
+
+		migration_18_jukebox(S)
+
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v18.")
+		to_chat(client, span_danger("v18 savefile migration complete."))
+
+	// Migration for pai to tg pregs
+	if(current_version < 19)
+		log_world("[client_ckey] preferences migrating from [current_version] to v19....")
+		to_chat(client, span_danger("Migrating savefile from version [current_version] to v19..."))
+
+		migration_19_paifile(S)
+
+		log_world("[client_ckey] preferences successfully migrated from [current_version] to v19.")
+		to_chat(client, span_danger("v19 savefile migration complete."))
 /datum/preferences/proc/update_character(current_version, list/save_data)
 	// Migration from BYOND savefiles to JSON: Important milemark.
 	if(current_version == -3)
@@ -68,7 +116,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 /// Migrates from byond savefile to json savefile
 /datum/preferences/proc/try_savefile_type_migration()
-	log_debug("[client_ckey] preferences migrating from savefile to JSON...")
+	log_world("[client_ckey] preferences migrating from savefile to JSON...")
 	to_chat(client, span_danger("Savefile migration to JSON in progress..."))
 
 	load_path(client.ckey, "preferences.sav") // old save file
@@ -80,7 +128,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	json_savefile.import_byond_savefile(new /savefile(old_path))
 	json_savefile.save()
 
-	log_debug("[client_ckey] preferences successfully migrated from savefile to JSON.")
+	log_world("[client_ckey] preferences successfully migrated from savefile to JSON.")
 	to_chat(client, span_danger("Savefile migration to JSON is complete."))
 
 	return TRUE
@@ -95,7 +143,23 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		CRASH("Attempted to load savefile without first loading a path!")
 	savefile = new /datum/json_savefile(load_and_save ? path : null)
 
-/datum/preferences/proc/load_preferences()
+// General preferences, have to be preloaded
+/datum/preferences/proc/load_early_prefs()
+	default_slot	= savefile.get_entry("default_slot", default_slot)
+	lastnews		= savefile.get_entry("lastnews", lastnews)
+	lastlorenews	= savefile.get_entry("lastlorenews", lastlorenews)
+
+/datum/preferences/proc/sanitize_early_prefs()
+	default_slot 	= sanitize_integer(default_slot, 1, CONFIG_GET(number/character_slots), initial(default_slot))
+	lastnews		= sanitize_text(lastnews, initial(lastnews))
+	lastlorenews	= sanitize_text(lastlorenews, initial(lastlorenews))
+
+/datum/preferences/proc/save_early_prefs()
+	savefile.set_entry("default_slot",	default_slot)
+	savefile.set_entry("lastnews",		lastnews)
+	savefile.set_entry("lastlorenews",	lastlorenews)
+
+/datum/preferences/proc/load_preferences(skip_client)
 	if(!savefile)
 		stack_trace("Attempted to load the preferences of [client] without a savefile; did you forget to call load_savefile?")
 		load_savefile()
@@ -111,7 +175,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		fcopy(savefile.path, bacpath) //byond helpfully lets you use a savefile for the first arg.
 		return FALSE
 
-	apply_all_client_preferences()
+	if(!skip_client)
+		apply_all_client_preferences()
+
+	load_early_prefs()
+	sanitize_early_prefs()
 
 	//try to fix any outdated data if necessary
 	if(needs_update >= 0)
@@ -167,6 +235,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(preference_type in value_cache)
 			write_preference(preference, preference.pref_serialize(value_cache[preference_type]))
 
+	save_early_prefs()
 	savefile.save()
 
 	return TRUE
@@ -194,7 +263,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!slot)
 		slot = default_slot
 
-	slot = sanitize_integer(slot, 1, config.character_slots, initial(default_slot))
+	slot = sanitize_integer(slot, 1, CONFIG_GET(number/character_slots), initial(default_slot))
 	if(slot != default_slot)
 		default_slot = slot
 		savefile.set_entry("default_slot", slot)
@@ -228,15 +297,29 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	clear_character_previews()
 	return TRUE
 
-/datum/preferences/proc/save_character()
+/datum/preferences/proc/save_character(override)
 	SHOULD_NOT_SLEEP(TRUE)
 	if(!savefile)
 		return FALSE
 
 	var/tree_key = "character[default_slot]"
+	var/first_save = FALSE
 	if(!(tree_key in savefile.get_entry()))
 		savefile.set_entry(tree_key, list())
+		first_save = TRUE
 	var/save_data = savefile.get_entry(tree_key)
+
+	for(var/datum/preference/preference as anything in get_preferences_in_priority_order())
+		if(preference.savefile_identifier != PREFERENCE_CHARACTER && !first_save && !override)
+			continue
+
+		if(!(preference.type in recently_updated_keys) && !first_save && !override)
+			continue
+
+		recently_updated_keys -= preference.type
+
+		if(preference.type in value_cache)
+			write_preference(preference, preference.pref_serialize(value_cache[preference.type]))
 
 	save_data["version"] = SAVEFILE_VERSION_MAX //load_character will sanitize any bad data, so assume up-to-date.
 	player_setup.save_character(save_data)
@@ -251,11 +334,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	// This basically just changes default_slot without loading the correct data, so the next save call will overwrite
 	// the slot
-	slot = sanitize_integer(slot, 1, config.character_slots, initial(default_slot))
+	slot = sanitize_integer(slot, 1, CONFIG_GET(number/character_slots), initial(default_slot))
 	if(slot != default_slot)
 		default_slot = slot
 		nif_path = nif_durability = nif_savedata = null //VOREStation Add - Don't copy NIF
 		savefile.set_entry("default_slot", slot)
+
+	// Clear stale data before overwriting.
+	savefile.remove_entry("character[slot]")
 
 	return TRUE
 

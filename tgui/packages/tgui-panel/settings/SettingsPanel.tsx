@@ -4,22 +4,26 @@
  * @license MIT
  */
 
-import { useDispatch, useSelector } from 'tgui/backend';
-import { Section, Stack, Tabs } from 'tgui/components';
-
-import { ChatPageSettings } from '../chat';
-import { changeSettingsTab } from './actions';
+import { Section, Stack, Tabs } from 'tgui-core/components';
+import { ChatPageSettings } from '../chat/ChatPageSettings';
 import { SETTINGS_TABS } from './constants';
-import { selectActiveTab } from './selectors';
 import { AdminSettings } from './SettingTabs/AdminSettings';
 import { ExportTab } from './SettingTabs/ExportTab';
 import { MessageLimits } from './SettingTabs/MessageLimits';
 import { SettingsGeneral } from './SettingTabs/SettingsGeneral';
+import { SettingsStatPanel } from './SettingTabs/SettingsStatPanel';
+import { SettingsWebsocket } from './SettingTabs/SettingsWebsocket';
 import { TextHighlightSettings } from './SettingTabs/TextHighlightSettings';
+import { TTSSettings } from './SettingTabs/TTSSettings';
+import { useSettings } from './use-settings';
 
 export const SettingsPanel = (props) => {
-  const activeTab = useSelector(selectActiveTab);
-  const dispatch = useDispatch();
+  const {
+    settings: { view },
+    updateSettings,
+  } = useSettings();
+  const { activeTab } = view;
+
   return (
     <Stack fill>
       <Stack.Item>
@@ -30,11 +34,12 @@ export const SettingsPanel = (props) => {
                 key={tab.id}
                 selected={tab.id === activeTab}
                 onClick={() =>
-                  dispatch(
-                    changeSettingsTab({
-                      tabId: tab.id,
-                    }),
-                  )
+                  updateSettings({
+                    view: {
+                      ...view,
+                      activeTab: tab.id,
+                    },
+                  })
                 }
               >
                 {tab.name}
@@ -43,13 +48,16 @@ export const SettingsPanel = (props) => {
           </Tabs>
         </Section>
       </Stack.Item>
-      <Stack.Item grow={1} basis={0}>
+      <Stack.Item grow basis={0}>
         {activeTab === 'general' && <SettingsGeneral />}
+        {activeTab === 'adminSettings' && <AdminSettings />}
         {activeTab === 'limits' && <MessageLimits />}
         {activeTab === 'export' && <ExportTab />}
-        {activeTab === 'chatPage' && <ChatPageSettings />}
         {activeTab === 'textHighlight' && <TextHighlightSettings />}
-        {activeTab === 'adminSettings' && <AdminSettings />}
+        {activeTab === 'chatPage' && <ChatPageSettings />}
+        {activeTab === 'statPanel' && <SettingsStatPanel />}
+        {activeTab === 'ttsSettings' && <TTSSettings />}
+        {activeTab === 'websocket' && <SettingsWebsocket />}
       </Stack.Item>
     </Stack>
   );

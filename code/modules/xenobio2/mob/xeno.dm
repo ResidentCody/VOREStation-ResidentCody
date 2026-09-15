@@ -74,13 +74,13 @@ Also includes Life and New
 
 		return 1	//Everything worked okay.
 
-/mob/living/simple_mob/xeno/New()
+/mob/living/simple_mob/xeno/Initialize(mapload)
 
 	traitdat = new()
 
 	ProcessTraits()
 
-	..()
+	. = ..()
 	if(colored)
 		color = traitdat.get_trait(TRAIT_XENO_COLOR)
 	create_reagents(internal_vol)
@@ -95,7 +95,7 @@ Also includes Life and New
 	if(!health)
 		set_stat(DEAD)
 
-/mob/living/simple_mob/xeno/bullet_act(var/obj/item/projectile/Proj)
+/mob/living/simple_mob/xeno/bullet_act(obj/item/projectile/Proj)
 	if(istype(Proj, /obj/item/projectile/beam/stun/xeno))
 		var/obj/item/projectile/beam/stun/xeno/hit = Proj
 		stasis += hit.stasisforce
@@ -103,4 +103,4 @@ Also includes Life and New
 
 /mob/living/simple_mob/xeno/Destroy()
 	QDEL_NULL(traitdat)
-	..()
+	. = ..()

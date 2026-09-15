@@ -1,6 +1,7 @@
-import { BooleanLike } from 'common/react';
+import type { BooleanLike } from 'tgui-core/react';
 
 export type Data = {
+  theme?: string;
   // GENERAL
   currentTab: number;
   video_comm: BooleanLike;

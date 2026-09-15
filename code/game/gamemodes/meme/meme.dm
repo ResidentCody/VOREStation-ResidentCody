@@ -36,8 +36,8 @@
 	var/const/waittime_h = 1800 //upper bound on time before intercept arrives (in tenths of seconds)
 
 /datum/game_mode/meme/announce()
-	to_world("<B>The current game mode is - Meme!</B>")
-	to_world("<B>An unknown creature has infested the mind of a crew member. Find and destroy it by any means necessary.</B>")
+	to_world(span_world("The current game mode is - Meme!"))
+	to_world(span_world("An unknown creature has infested the mind of a crew member. Find and destroy it by any means necessary."))
 
 /datum/game_mode/meme/can_start()
 	if(!..())
@@ -103,7 +103,7 @@
 	return
 
 
-/datum/game_mode/proc/forge_meme_objectives(var/datum/mind/meme, var/datum/mind/first_host)
+/datum/game_mode/proc/forge_meme_objectives(datum/mind/meme, datum/mind/first_host)
 	if (config.objectives_disabled)
 		return
 
@@ -124,16 +124,16 @@
 
 	return
 
-/datum/game_mode/proc/greet_meme(var/datum/mind/meme, var/you_are=1)
+/datum/game_mode/proc/greet_meme(datum/mind/meme, you_are=1)
 	if (you_are)
-		to_chat(meme.current, "<span class='danger'>You are a meme!</span>")
+		to_chat(meme.current, span_danger("You are a meme!"))
 	show_objectives(meme)
 	return
 
 /datum/game_mode/meme/check_finished()
 	var/memes_alive = 0
 	for(var/datum/mind/meme in memes)
-		if(!istype(meme.current,/mob/living))
+		if(!isliving(meme.current))
 			continue
 		if(meme.current.stat==2)
 			continue

@@ -1,10 +1,11 @@
-import { useBackend } from '../backend';
-import { Button, ByondUi } from '../components';
-import { NtosWindow } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { NtosWindow } from 'tgui/layouts';
+import { Button, ByondUi } from 'tgui-core/components';
+
 import {
-  camera,
   CameraConsoleContent,
-  Data,
+  type camera,
+  type Data,
   prevNextCamera,
   selectCameras,
 } from './CameraConsole';
@@ -26,7 +27,7 @@ export const NtosCameraConsole = (props) => {
         <div className="CameraConsole__right">
           <div className="CameraConsole__toolbar">
             <b>Camera: </b>
-            {(activeCamera && activeCamera.name) || '—'}
+            {activeCamera?.name || '—'}
           </div>
           <div className="CameraConsole__toolbarRight">
             SEL:

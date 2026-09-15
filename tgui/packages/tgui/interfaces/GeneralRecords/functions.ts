@@ -1,9 +1,7 @@
-import { filter } from 'common/collections';
-import { flow } from 'common/fp';
-import { createSearch } from 'common/string';
-
-import { modalOpen } from '../common/ComplexModal';
-import { field, record } from './types';
+import { modalOpen } from 'tgui/interfaces/common/ComplexModal';
+import { flow } from 'tgui-core/fp';
+import { createSearch } from 'tgui-core/string';
+import type { field, record } from './types';
 
 export function doEdit(field: field) {
   modalOpen('edit', {
@@ -27,7 +25,7 @@ export function selectRecords(records: record[], searchText = ''): record[] {
       if (!searchText) {
         return records;
       } else {
-        return filter(records, (record) => {
+        return records.filter((record) => {
           return nameSearch(record) || idSearch(record) || dnaSearch(record);
         });
       }

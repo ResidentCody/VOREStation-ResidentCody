@@ -1,92 +1,98 @@
-/decl/hierarchy/outfit/job/assistant/worker
-	id_type = /obj/item/weapon/card/id/civilian/service
+/datum/decl/hierarchy/outfit/job/assistant/worker
+	id_type = /obj/item/card/id/civilian/service
 
-/decl/hierarchy/outfit/job/assistant/cargo
-	id_type = /obj/item/weapon/card/id/cargo
+/datum/decl/hierarchy/outfit/job/assistant/cargo
+	id_type = /obj/item/card/id/cargo
 
-/decl/hierarchy/outfit/job/assistant/engineer
-	id_type = /obj/item/weapon/card/id/engineering
+/datum/decl/hierarchy/outfit/job/assistant/engineer
+	id_type = /obj/item/card/id/engineering
 	flags = OUTFIT_HAS_BACKPACK|OUTFIT_EXTENDED_SURVIVAL
 
-/decl/hierarchy/outfit/job/assistant/medic
-	id_type = /obj/item/weapon/card/id/medical
+/datum/decl/hierarchy/outfit/job/assistant/medic
+	id_type = /obj/item/card/id/medical
 
-/decl/hierarchy/outfit/job/assistant/scientist
-	id_type = /obj/item/weapon/card/id/science
+/datum/decl/hierarchy/outfit/job/assistant/scientist
+	id_type = /obj/item/card/id/science
 
-/decl/hierarchy/outfit/job/assistant/officer
-	id_type = /obj/item/weapon/card/id/security
+/datum/decl/hierarchy/outfit/job/assistant/officer
+	id_type = /obj/item/card/id/security
 
-/decl/hierarchy/outfit/job/assistant/entertainer
-	id_type = /obj/item/weapon/card/id/civilian/entertainer
+/datum/decl/hierarchy/outfit/job/assistant/entertainer
+	id_type = /obj/item/card/id/civilian/entertainer
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur
-	id_type = /obj/item/weapon/card/id/civilian/entrepreneur
-	l_hand = /obj/item/device/ticket_printer/train
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur
+	id_type = /obj/item/card/id/civilian/entrepreneur
+	l_hand = /obj/item/ticket_printer/train
 	uniform = /obj/item/clothing/under/tropical/pink
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/lawyer
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/lawyer
 	uniform = /obj/item/clothing/under/lawyer/red
-	r_hand = /obj/item/weapon/clipboard
-	l_pocket = /obj/item/weapon/pen/fountain3
+	r_hand = /obj/item/clipboard
+	l_pocket = /obj/item/pen/fountain3
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/private_eye
-	l_hand = /obj/item/weapon/storage/box/private_investigator
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/private_eye
+	l_hand = /obj/item/storage/box/private_investigator
 	suit = /obj/item/clothing/suit/storage/trench
 	head = /obj/item/clothing/head/fedora/brown
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/bodyguard
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/bodyguard
 	glasses = /obj/item/clothing/glasses/sunglasses
-	l_pocket = /obj/item/weapon/reagent_containers/spray/pepper
+	l_pocket = /obj/item/reagent_containers/spray/pepper
 	suit = /obj/item/clothing/accessory/sweater/blackneck
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/personal_physician
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/personal_physician
 	suit = /obj/item/clothing/suit/storage/toggle/labcoat
 	l_pocket = /obj/item/clothing/accessory/stethoscope
-	r_pocket = /obj/item/device/healthanalyzer
+	r_pocket = /obj/item/healthanalyzer
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/dentist
-	l_hand = /obj/item/weapon/storage/box/dentist
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/dentist
+	l_hand = /obj/item/storage/box/dentist
 	suit = /obj/item/clothing/suit/storage/toggle/labcoat
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/fitness_instructor
-	l_hand = /obj/item/weapon/storage/box/fitness_trainer
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/fitness_instructor
+	l_hand = /obj/item/storage/box/fitness_trainer
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/yoga_teacher
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/yoga_teacher
 	uniform = /obj/item/clothing/under/pants/yogapants
-	l_hand = /obj/item/weapon/storage/box/yoga_teacher
+	l_hand = /obj/item/storage/box/yoga_teacher
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/masseuse
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/masseuse
 	r_hand = /obj/item/roller/massage
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/tradesperson
-	r_hand = /obj/item/weapon/storage/toolbox/brass
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/tradesperson
+	r_hand = /obj/item/storage/toolbox/brass
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/streamer
-	l_pocket = /obj/item/device/tvcamera/streamer
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/streamer
+	l_pocket = /obj/item/tvcamera/streamer
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/influencer
-	l_pocket = /obj/item/device/camera/selfie
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/influencer
+	l_pocket = /obj/item/camera/selfie
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/paranormal_investigator
-	l_hand = /obj/item/weapon/storage/box/paranormal_investigator
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/paranormal_investigator
+	l_hand = /obj/item/storage/box/paranormal_investigator
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/stylist
-	l_hand = /obj/item/weapon/storage/box/stylist
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/stylist
+	l_hand = /obj/item/storage/box/stylist
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/fisher
-	r_hand = /obj/item/weapon/material/fishing_rod/modern
-	l_pocket = /obj/item/weapon/material/fishing_net
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/fisher
+	r_hand = /obj/item/material/fishing_rod/modern
+	l_pocket = /obj/item/material/fishing_net
 	head = /obj/item/clothing/head/fishing
-	r_pocket = /obj/item/weapon/storage/box/wormcan
+	r_pocket = /obj/item/storage/box/wormcan
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/personal_secretary
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/personal_secretary
 	uniform = /obj/item/clothing/under/lawyer/blue
-	r_hand = /obj/item/weapon/clipboard
-	l_pocket = /obj/item/weapon/pen/fountain3
+	r_hand = /obj/item/clipboard
+	l_pocket = /obj/item/pen/fountain3
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/fortune_teller
-	l_hand = /obj/item/weapon/storage/box/fortune_teller
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/fortune_teller
+	l_hand = /obj/item/storage/box/fortune_teller
 
-/decl/hierarchy/outfit/job/assistant/entrepreneur/spirit_healer
-	l_hand = /obj/item/weapon/storage/box/spirit_healer
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/spirit_healer
+	l_hand = /obj/item/storage/box/spirit_healer
+
+/datum/decl/hierarchy/outfit/job/assistant/entrepreneur/educator
+	uniform = /obj/item/clothing/under/suit_jacket/charcoal
+	r_hand = /obj/item/clipboard
+	l_pocket = /obj/item/pen/fountain2
+	r_pocket = /obj/item/laser_pointer

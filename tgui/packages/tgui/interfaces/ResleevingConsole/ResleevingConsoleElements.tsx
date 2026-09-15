@@ -1,11 +1,19 @@
-import { useBackend } from '../../backend';
-import { Box, Button, NoticeBox, Section, Tabs } from '../../components';
+import { useBackend } from 'tgui/backend';
+import {
+  Box,
+  Button,
+  NoticeBox,
+  Section,
+  Stack,
+  Tabs,
+} from 'tgui-core/components';
+
 import { MENU_BODY, MENU_MAIN, MENU_MIND } from './constants';
 import { ResleevingConsolePodGrowers } from './ResleevingConsolePodGrowers';
 import { ResleevingConsolePodSleevers } from './ResleevingConsolePodSleevers';
 import { ResleevingConsolePodSpods } from './ResleevingConsolePodSpods';
 import { ResleevingConsoleRecords } from './ResleevingConsoleRecords';
-import { Data } from './types';
+import type { Data } from './types';
 
 export const ResleevingConsoleBody = (props) => {
   const { data } = useBackend<Data>();
@@ -78,28 +86,30 @@ export const ResleevingConsoleNavigation = (props) => {
 export const ResleevingConsoleTemp = (props) => {
   const { act, data } = useBackend<Data>();
   const { temp } = data;
-  if (!temp || !temp.text || temp.text.length <= 0) {
+  if (!temp?.text || temp.text.length <= 0) {
     return;
   }
 
   const tempProp = { [temp.style]: true };
   return (
-    <NoticeBox {...tempProp}>
-      <Box inline verticalAlign="middle">
-        {temp.text}
-      </Box>
-      <Button
-        icon="times-circle"
-        style={{
-          float: 'right',
-        }}
-        onClick={() => act('cleartemp')}
-      />
-      <Box
-        style={{
-          clear: 'both',
-        }}
-      />
-    </NoticeBox>
+    <Stack.Item>
+      <NoticeBox {...tempProp}>
+        <Box inline verticalAlign="middle">
+          {temp.text}
+        </Box>
+        <Button
+          icon="times-circle"
+          style={{
+            float: 'right',
+          }}
+          onClick={() => act('cleartemp')}
+        />
+        <Box
+          style={{
+            clear: 'both',
+          }}
+        />
+      </NoticeBox>
+    </Stack.Item>
   );
 };

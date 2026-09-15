@@ -3,9 +3,6 @@
 // 5 seconds
 #define TRACKS_CRUSTIFY_TIME   50
 
-// color-dir-dry
-var/global/list/image/fluidtrack_cache=list()
-
 /datum/fluidtrack
 	var/direction=0
 	var/basecolor="#A10808"
@@ -62,7 +59,7 @@ var/global/list/image/fluidtrack_cache=list()
 	* @param goingdir Direction tracks are going to (or 0).
 	* @param bloodcolor Color of the blood when wet.
 	*/
-/obj/effect/decal/cleanable/blood/tracks/proc/AddTracks(var/list/DNA, var/comingdir, var/goingdir, var/bloodcolor="#A10808")
+/obj/effect/decal/cleanable/blood/tracks/proc/AddTracks(list/DNA, comingdir, goingdir, bloodcolor="#A10808")
 	var/updated=0
 	// Shift our goingdir 4 spaces to the left so it's in the GOING bitblock.
 	var/realgoing=goingdir<<4
@@ -113,8 +110,7 @@ var/global/list/image/fluidtrack_cache=list()
 			updated=1
 
 	dirs |= comingdir|realgoing
-	if(islist(blood_DNA))
-		blood_DNA |= DNA.Copy()
+	init_forensic_data().merge_blooddna(null,DNA)
 	if(updated)
 		update_icon()
 
@@ -142,6 +138,7 @@ var/global/list/image/fluidtrack_cache=list()
 		stack[stack_idx]=track
 		add_overlay(I)
 	updatedtracks=0 // Clear our memory of updated tracks.
+	add_janitor_hud_overlay()
 
 /obj/effect/decal/cleanable/blood/tracks/footprints
 	name = "wet footprints"
@@ -192,5 +189,12 @@ var/global/list/image/fluidtrack_cache=list()
 	gender = PLURAL
 	random_icon_states = null
 	amount = 0
+
+//Used for the otieshelter and drgnplateu
+/obj/effect/decal/cleanable/blood/tracks/suspicious
+	color = "red"
+	desc = "Your instincts say you shouldn't be following these."
+	icon = 'icons/effects/blood.dmi'
+	icon_state = "tracks"
 
 #undef TRACKS_CRUSTIFY_TIME

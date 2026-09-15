@@ -1,23 +1,22 @@
-import { createSearch } from 'common/string';
 import { useState } from 'react';
-
-import { useBackend } from '../backend';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
 import {
   Box,
   Button,
   Collapsible,
   Dropdown,
-  Flex,
   Input,
   Section,
-} from '../components';
-import { Window } from '../layouts';
+  Stack,
+} from 'tgui-core/components';
+import { createSearch } from 'tgui-core/string';
 
 type Data = {
-  items: Record<string, sortable[]>;
+  items: Record<string, Sortable[]>;
 };
 
-type sortable = {
+type Sortable = {
   name: string;
   affordable: number;
   price: number;
@@ -25,8 +24,8 @@ type sortable = {
 };
 
 const sortTypes = {
-  Alphabetical: (a: sortable, b: sortable) => a.name > b.name,
-  'By price': (a: sortable, b: sortable) => a.price - b.price,
+  Alphabetical: (a: Sortable, b: Sortable) => a.name.localeCompare(b.name),
+  'By price': (a: Sortable, b: Sortable) => a.price - b.price,
 };
 
 export const CasinoPrizeDispenser = () => {
@@ -34,35 +33,21 @@ export const CasinoPrizeDispenser = () => {
   const [sortOrder, setSortOrder] = useState<string>('Alphabetical');
   const [descending, setDescending] = useState<boolean>(false);
 
-  function handleSearchText(value: string) {
-    setSearchText(value);
-  }
-
-  function handleSortOrder(value: string) {
-    setSortOrder(value);
-  }
-
-  function handleDescending(value: boolean) {
-    setDescending(value);
-  }
-
   return (
     <Window width={400} height={450}>
       <Window.Content className="Layout__content--flexColumn" scrollable>
-        <>
-          <CasinoPrizeDispenserSearch
-            sortOrder={sortOrder}
-            descending={descending}
-            onSearchText={handleSearchText}
-            onSortOrder={handleSortOrder}
-            onDescending={handleDescending}
-          />
-          <CasinoPrizeDispenserItems
-            searchText={searchText}
-            sortOrder={sortOrder}
-            descending={descending}
-          />
-        </>
+        <CasinoPrizeDispenserSearch
+          sortOrder={sortOrder}
+          descending={descending}
+          onSearchText={setSearchText}
+          onSortOrder={setSortOrder}
+          onDescending={setDescending}
+        />
+        <CasinoPrizeDispenserItems
+          searchText={searchText}
+          sortOrder={sortOrder}
+          descending={descending}
+        />
       </Window.Content>
     </Window>
   );
@@ -71,21 +56,21 @@ export const CasinoPrizeDispenser = () => {
 const CasinoPrizeDispenserSearch = (props: {
   sortOrder: string;
   descending: boolean;
-  onSearchText: Function;
-  onSortOrder: Function;
-  onDescending: Function;
+  onSearchText: React.Dispatch<React.SetStateAction<string>>;
+  onSortOrder: React.Dispatch<React.SetStateAction<string>>;
+  onDescending: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   return (
     <Box mb="0.5rem">
-      <Flex width="100%">
-        <Flex.Item grow="1" mr="0.5rem">
+      <Stack width="100%">
+        <Stack.Item grow mr="0.5rem">
           <Input
             placeholder="Search by item name.."
             width="100%"
-            onInput={(_e, value) => props.onSearchText(value)}
+            onChange={(value) => props.onSearchText(value)}
           />
-        </Flex.Item>
-        <Flex.Item basis="30%">
+        </Stack.Item>
+        <Stack.Item basis="30%">
           <Dropdown
             autoScroll={false}
             selected={props.sortOrder}
@@ -94,8 +79,8 @@ const CasinoPrizeDispenserSearch = (props: {
             lineHeight="19px"
             onSelected={(v) => props.onSortOrder(v)}
           />
-        </Flex.Item>
-        <Flex.Item>
+        </Stack.Item>
+        <Stack.Item>
           <Button
             icon={props.descending ? 'arrow-down' : 'arrow-up'}
             height="19px"
@@ -104,8 +89,8 @@ const CasinoPrizeDispenserSearch = (props: {
             ml="0.5rem"
             onClick={() => props.onDescending(!props.descending)}
           />
-        </Flex.Item>
-      </Flex>
+        </Stack.Item>
+      </Stack>
     </Box>
   );
 };
@@ -118,15 +103,15 @@ const CasinoPrizeDispenserItems = (props: {
   const { act, data } = useBackend<Data>();
   const { items } = data;
   // Search thingies
-  const searcher = createSearch(
+  const searcher = createSearch<[string, Sortable]>(
     props.searchText,
-    (item: [string, sortable]) => {
+    (item) => {
       return item[0];
     },
   );
 
   let has_contents = false;
-  let contents = Object.entries(items).map((kv) => {
+  const contents = Object.entries(items).map((kv) => {
     let items_in_cat = Object.entries(kv[1])
       .filter(searcher)
       .map((kv2) => {
@@ -134,7 +119,7 @@ const CasinoPrizeDispenserItems = (props: {
       })
       .sort(sortTypes[props.sortOrder]);
     if (items_in_cat.length === 0) {
-      return;
+      return undefined;
     }
     if (props.descending) {
       items_in_cat = items_in_cat.reverse();
@@ -150,7 +135,7 @@ const CasinoPrizeDispenserItems = (props: {
     );
   });
   return (
-    <Flex.Item grow="1" overflow="auto">
+    <Stack.Item grow overflow="auto">
       <Section>
         {has_contents ? (
           contents
@@ -158,14 +143,14 @@ const CasinoPrizeDispenserItems = (props: {
           <Box color="label">No items matching your criteria was found!</Box>
         )}
       </Section>
-    </Flex.Item>
+    </Stack.Item>
   );
 };
 
 const CasinoPrizeDispenserItemsCategory = (props: {
   key: string;
   title: string;
-  items: sortable[];
+  items: Sortable[];
 }) => {
   const { act } = useBackend();
   const { title, items, ...rest } = props;

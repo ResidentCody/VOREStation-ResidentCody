@@ -1,6 +1,7 @@
-import { useBackend } from '../../backend';
-import { Button, LabeledList, Section } from '../../components';
-import { Data } from './types';
+import { useBackend } from 'tgui/backend';
+import { Button, LabeledList, Section } from 'tgui-core/components';
+
+import type { Data } from './types';
 
 export const RCONBreakerList = (props) => {
   const { act, data } = useBackend<Data>();
@@ -8,7 +9,7 @@ export const RCONBreakerList = (props) => {
   const { breaker_info } = data;
 
   return (
-    <Section title="Breakers">
+    <Section fill title="Breakers" scrollable>
       <LabeledList>
         {breaker_info ? (
           breaker_info.map((breaker) => (

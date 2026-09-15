@@ -1,6 +1,6 @@
-import { useBackend } from '../backend';
-import { Button, Section } from '../components';
-import { Window } from '../layouts';
+import { useBackend } from 'tgui/backend';
+import { Window } from 'tgui/layouts';
+import { Button, Section } from 'tgui-core/components';
 
 type alarm = { name: string; ref: string };
 
@@ -13,8 +13,8 @@ export const AtmosAlertConsole = (props) => {
 
   return (
     <Window width={350} height={300}>
-      <Window.Content scrollable>
-        <Section title="Alarms">
+      <Window.Content>
+        <Section fill scrollable title="Alarms">
           <ul>
             {priority_alarms.length === 0 && (
               <li className="color-good">No Priority Alerts</li>

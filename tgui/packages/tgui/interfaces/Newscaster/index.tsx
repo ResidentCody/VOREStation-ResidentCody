@@ -1,7 +1,7 @@
-import { useSharedState } from '../../backend';
-import { Box } from '../../components';
-import { Window } from '../../layouts';
-import { TemporaryNotice } from '../common/TemporaryNotice';
+import { useSharedState } from 'tgui/backend';
+import { TemporaryNotice } from 'tgui/interfaces/common/TemporaryNotice';
+import { Window } from 'tgui/layouts';
+import { Box } from 'tgui-core/components';
 import {
   NEWSCASTER_SCREEN_MAIN,
   NEWSCASTER_SCREEN_NEWCHANNEL,

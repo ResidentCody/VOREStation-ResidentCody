@@ -1,12 +1,19 @@
-import { useBackend } from '../../backend';
-import { AnimatedNumber, Button, LabeledList, Section } from '../../components';
-import { formatTime } from '../../format';
-import { Data } from './types';
+import { useBackend } from 'tgui/backend';
+import {
+  AnimatedNumber,
+  Button,
+  LabeledList,
+  Section,
+  Stack,
+} from 'tgui-core/components';
+import { formatTime } from 'tgui-core/format';
+
+import type { Data } from './types';
 
 export const SupplyConsoleShuttleStatus = (props) => {
   const { act, data } = useBackend<Data>();
 
-  const { supply_points, shuttle, shuttle_auth } = data;
+  const { supply_points, shuttle, shuttle_auth, price_mod, cash_points } = data;
 
   let shuttle_buttons: React.JSX.Element | string = '';
   let showShuttleForce = false;
@@ -49,10 +56,19 @@ export const SupplyConsoleShuttleStatus = (props) => {
   }
 
   return (
-    <Section>
+    <>
       <LabeledList>
-        <LabeledList.Item label="Supply Points">
-          <AnimatedNumber value={supply_points} />
+        <LabeledList.Item label="Reserve">
+          {' '}
+          <AnimatedNumber
+            value={supply_points * (price_mod ? 1 : cash_points)}
+          />
+          <Button
+            tooltip={price_mod ? 'Supply Points' : 'Thalers'}
+            onClick={() => act('change_cash_mode')}
+          >
+            {price_mod === 1 ? 'SP' : '₮'}
+          </Button>
         </LabeledList.Item>
       </LabeledList>
       <Section title="Supply Shuttle" mt={2}>
@@ -60,21 +76,21 @@ export const SupplyConsoleShuttleStatus = (props) => {
           <LabeledList.Item
             label="Location"
             buttons={
-              <>
-                {shuttle_buttons}
-                {showShuttleForce ? (
-                  <Button
-                    icon="exclamation-triangle"
-                    onClick={() =>
-                      act('send_shuttle', { mode: 'force_shuttle' })
-                    }
-                  >
-                    Force Launch
-                  </Button>
-                ) : (
-                  ''
+              <Stack>
+                <Stack.Item>{shuttle_buttons}</Stack.Item>
+                {!!showShuttleForce && (
+                  <Stack.Item>
+                    <Button
+                      icon="exclamation-triangle"
+                      onClick={() =>
+                        act('send_shuttle', { mode: 'force_shuttle' })
+                      }
+                    >
+                      Force Launch
+                    </Button>
+                  </Stack.Item>
                 )}
-              </>
+              </Stack>
             }
           >
             {shuttle.location}
@@ -89,6 +105,6 @@ export const SupplyConsoleShuttleStatus = (props) => {
           )}
         </LabeledList>
       </Section>
-    </Section>
+    </>
   );
 };
